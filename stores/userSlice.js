@@ -640,6 +640,34 @@ export const postBankInfoAsync = createAsyncThunk("profile/postBankAsync", async
 
 });
 
+//get kart fiyat dashboard buradan
+export const getkartFiyat = createAsyncThunk("profile/getkartFiyat", async() => {
+
+    const res = await axios.get(`https://us-central1-hibritardpro.cloudfunctions.net/api/getkartfiyat`, {
+            headers: {
+                'Authorization': localStorage.getItem("ADminPanleToken")
+            }
+        })
+        .then(res => {
+
+            console.log("fiyatSucess", res)
+            return res;
+
+        })
+        .catch(err => {
+
+            console.log("fiyatHata", err)
+            return err;
+
+        });
+
+    return res;
+
+});
+
+
+
+
 
 
 
@@ -735,13 +763,14 @@ export const updateOnlyPhoneInputContactInfoAsync = createAsyncThunk("profile/up
             newPhoneInputValue: data.newEnterPhoneInput,
             newDefaultPhonenumber: data.newEnterDefaultPhone,
             existPhoneNumber: data.existPhoneNumber,
-            existDefaultPhone: data.existDefaultPhone
+            existDefaultPhone: data.existDefaultPhone,
+            phoneTipi: data.phoneTipi,
+            eixstphoneTipi: data.eixstphoneTipi
 
 
         }, {
             headers: {
                 'Authorization': localStorage.getItem("GZIToken")
-
             }
         })
         .then(res => {
@@ -830,6 +859,8 @@ export const updateSocialfromUrlPanel = createAsyncThunk("profile/updateSocialfr
 
 export const updateOnlyBankDataArrayInfoAsync = createAsyncThunk("profile/updateOnlyBankDataArrayInfoAsync", async(data) => {
 
+    console.log("dataComm", data)
+
 
     const res = await axios.put(`https://us-central1-hibritardpro.cloudfunctions.net/api/updateBankDataOnly/${data.BankDataId}`, {
 
@@ -838,7 +869,10 @@ export const updateOnlyBankDataArrayInfoAsync = createAsyncThunk("profile/update
             bankStation: data.bankStation,
             bankIban: data.bankIban,
             bankAccountNumber: data.bankAccountNumber,
-            arrayLentghToChange: data.arrayLentghToChange
+            arrayLentghToChange: data.arrayLentghToChange,
+            swiftData: data.swiftData,
+            bicCode: data.bicCode,
+            bankSubeKodu: data.bankSubeKodu
 
         }, {
 
@@ -852,9 +886,13 @@ export const updateOnlyBankDataArrayInfoAsync = createAsyncThunk("profile/update
         })
         .then(res => {
 
+            console.log("okksuyvce", res)
+
             return res;
         })
         .catch(err => {
+
+            console.log("suretoLoad", err)
 
             return err;
         });
@@ -1588,6 +1626,7 @@ export const updateOrderOfFaturaBillIdAsync = createAsyncThunk("profile/updateOr
 ///Update AccountType To Premium =>Normal
 export const changeAccountTypeNormalToPremium = createAsyncThunk("profile/changeAccountTypeNormalToPremium", async(data) => {
 
+    console.log("dataaOffer", data)
 
 
     const res = await axios.put(`https://us-central1-hibritardpro.cloudfunctions.net/api/changeAccountType/${data.secretKod}`, {
@@ -1601,9 +1640,13 @@ export const changeAccountTypeNormalToPremium = createAsyncThunk("profile/change
         })
         .then(res => {
 
+            console.log("afterupdateoo", res)
+
             return res;
         })
         .catch(err => {
+
+            console.log("errorTo", err)
 
             return err;
         });
@@ -2012,14 +2055,12 @@ export const deletePhoneArrayOnly = createAsyncThunk("profile/deletePhoneArrayOn
         },
     }
 
-
-
-
-
     const res = await axios.put(`https://us-central1-hibritardpro.cloudfunctions.net/api/deleteArrayPhone/${data.conatctDataId}`, {
 
         existPhoneNumber: data.existPhoneNumber,
-        existDefaultPhone: data.existDefaultPhone
+        existDefaultPhone: data.existDefaultPhone,
+        existphoneTipi: data.existphoneTipi
+
 
     }, {
         headers: {
@@ -2081,6 +2122,8 @@ export const deleteEmailArrayOnly = createAsyncThunk("profile/deleteEmailArrayOn
 //delete File ArrayOnly from here
 export const deleteFileArrayOnlyUpload = createAsyncThunk("profile/deleteFileArrayOnlyUpload", async(data) => {
 
+    console.log("dataTdelete", data)
+
 
 
     const res = await axios.put(`https://us-central1-hibritardpro.cloudfunctions.net/api/deleteArrayFileUpload/${data.belgeDocumentId}`, {
@@ -2093,21 +2136,44 @@ export const deleteFileArrayOnlyUpload = createAsyncThunk("profile/deleteFileArr
             }
         })
         .then(res => {
-
-
-
             return res;
         })
         .catch(err => {
-
-
-
 
             return err;
         });
 
     return res;
 })
+
+
+//update ORDER type only deneme
+export const updateOnlydenemeOrderType = createAsyncThunk("profile/updateOnlydenemeOrderType", async(data) => {
+
+    console.log("dataTdelete", data)
+
+
+
+    const res = await axios.put(`https://us-central1-hibritardpro.cloudfunctions.net/api/updateOrderType`, {
+
+            karttypeTorder: data.karttypeTorder
+
+        }, {
+            headers: {
+                'Authorization': localStorage.getItem("GZIToken")
+            }
+        })
+        .then(res => {
+            return res;
+        })
+        .catch(err => {
+
+            return err;
+        });
+
+    return res;
+})
+
 
 
 ///delete Bank ArrayOnly from here Element
@@ -2122,7 +2188,10 @@ export const deleteBankElementArrayOnlyUpload = createAsyncThunk("profile/delete
             existAccountOwner: data.existAccountOwner !== "" ? data.existAccountOwner : "",
             existbankNumber: data.existbankNumber !== "" ? data.existbankNumber : "",
             existbankName: data.existbankName !== "" ? data.existbankName : "",
-            existbankStation: data.existbankStation !== "" ? data.existbankStation : ""
+            existbankStation: data.existbankStation !== "" ? data.existbankStation : "",
+            existswiftData: data.existswiftData !== "" ? data.existswiftData : "",
+            existbicCode: data.existbicCode !== "" ? data.existbicCode : "",
+            bankSubeKodu: data.bankSubeKodu !== "" ? data.bankSubeKodu : "",
 
         }, {
             headers: {
@@ -2131,13 +2200,13 @@ export const deleteBankElementArrayOnlyUpload = createAsyncThunk("profile/delete
         })
         .then(res => {
 
-
+            console.log("sucessh", res)
 
             return res;
         })
         .catch(err => {
 
-
+            console.log("hatayuug", err)
 
             return err;
         });
@@ -2515,8 +2584,11 @@ const userSlice = createSlice({
         deleteFileUploadElementStatus: "",
         deletebankAarrayElementStatus: "",
         userInfoOnly: "",
+        userInfoToShowOnPublic: null,
         onlyStatusUser: "",
         postContactStatus: "",
+        getkartfiyat: "",
+        getkartfiyatStatus: "",
         postFaturaStatus: "",
         postPanelProfilUrlStatus: "",
         postPanelSocialUrlStatus: "",
@@ -2541,7 +2613,8 @@ const userSlice = createSlice({
 
         orderUpdateFaturaStatus: "",
         orderFaturaStatus: "",
-        accountTypeChangeStatus: ""
+        accountTypeChangeStatus: "",
+        successUpdateToPro: null
 
 
 
@@ -2895,6 +2968,17 @@ const userSlice = createSlice({
             state.postContactStatus = "success";
         },
 
+        [getkartFiyat.pending]: (state, action) => {
+
+            state.getkartfiyatStatus = "loading";
+        },
+        [getkartFiyat.fulfilled]: (state, action) => {
+            console.log("getFiyat", action);
+            state.getkartfiyat = action.payload.data ? action.payload.data : "";
+            state.getkartfiyatStatus = "success";
+
+        },
+
         // Post Fatura from here    
 
         [postFaturaInfoAsync.pending]: (state, action) => {
@@ -3104,7 +3188,10 @@ const userSlice = createSlice({
         },
         [changeAccountTypeNormalToPremium.fulfilled]: (state, action) => {
 
+            console.log("yoosucces", action)
+
             state.accountTypeChangeStatus = "success";
+            state.successUpdateToPro = action.payload.data ? action.payload.data : "";
 
         },
 
@@ -3285,13 +3372,14 @@ const userSlice = createSlice({
 
 
         [getOnlyuserTop.pending]: (state, action) => {
-            state.onlyStatusUser = "loading";
+            state.status = "loading";
         },
         [getOnlyuserTop.fulfilled]: (state, action) => {
 
             console.log("yotrr", action.payload.data)
-            state.onlyStatusUser = "success";
+            state.status = "success";
             state.userInfoOnly = action.payload.data ? action.payload.data.hideLogo : ""
+            state.userInfoToShowOnPublic = action.payload.data ? action.payload.data : ""
         }
 
 

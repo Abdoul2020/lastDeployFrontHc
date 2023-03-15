@@ -14,13 +14,15 @@ import userSlice, {
   updateProfileBackgroundAsync,
   themeChangeAsync,
   getUserAsync,
+  getkartFiyat,
   AddBillInfoDataAsync,
   changegePasswordAsync,
 
   updateDenemeToisStandartTrue,
   updateDenemeToiPremiumTrue,
   updateDenemeToisDenemeTrue,
-  upadateHideTotrue
+  upadateHideTotrue,
+  updateOnlydenemeOrderType
 } from "../../stores/userSlice";
 
 import ImageLoader from "react-imageloader";
@@ -49,6 +51,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
+import { FlashAuto } from "@mui/icons-material";
 
 
 
@@ -106,10 +109,7 @@ function View() {
     ? profile.find((s) => s.profileId == selectedProfileId)
     : []);
 
-    console.log("ewrr::",selectedProfileId, "agau",
-     profile.find((s) => s.profileId) )
-
-
+    
 
   const selectedProfilData = profile &&
     profile != undefined && profile.length > 0
@@ -138,9 +138,12 @@ function View() {
 
   useEffect(() => {
 
-     if(selectedProfilData && selectedProfilData!== undefined && selectedProfilData.length > 0 ){
+    console.log("okkwty", selectedProfilData)
 
-console.log("hhdsj")
+     if(selectedProfilData && selectedProfilData!== undefined ){
+
+console.log("hhdsj",selectedProfilData.profileTheme)
+
       setProfileTheme(selectedProfilData && selectedProfilData.profileTheme);
     setProfileData(selectedProfilData);
     
@@ -151,6 +154,11 @@ console.log("hhdsj")
   /* profil image start */
 
   useEffect(() => {
+
+    
+
+
+
     emailFormatController();
     emailFormatController2();
   }, [profileData]);
@@ -342,6 +350,7 @@ console.log("hhdsj")
   //check the popup for hibrit Logo Kaldır
 
   const [checkRight, setcheckRight] = useState(false);
+  const [logogizli, setlogogizli]= useState(false);
 
   //bank popu and Pay
   const [bankPopup, setbankPopup] = useState(false);
@@ -362,29 +371,105 @@ console.log("hhdsj")
   const [existSecretKod, setexistSecretKod] = useState(true);
 
 
+
+
   useEffect(() => {
     dispatch(getUserAsync());
+    dispatch(getkartFiyat());
   }, []);
+  const [sadekartvalueStandart,setsadekartvalueStandart]= useState("");
+  const [logolukartvalueStandart,setlogolukartvalueStandart]= useState("");
+  const [ozelkartvalueStandart,setozelkartvalueStandart]= useState("");
 
-  //CAHNEG tYPE of this
+  //premiumvalue
+  const [sadekartvaluePremium,setsadekartvaluePremium]= useState("");
+  const [logolukartvaluepremium,setlogolukartvaluepremium]= useState("");
+  const [ozelkartvaluePremium,setozelkartvaluePremium]= useState("");
+
+
+  const kartfiyatlar = useSelector((state)=> state.userSlice.getkartfiyat);
+
   useEffect(() => {
 
+    if(kartfiyatlar !== null && kartfiyatlar !== undefined && kartfiyatlar!=="" ){
 
-    if (NormalToPremiumStatus !== null && NormalToPremiumStatus === "success") {
-      setcodeVerificationSuccess(true);
+       console.log("pricecommingg::", kartfiyatlar)
+
+       setsadekartvalueStandart(kartfiyatlar.kartFiyat[1].Ssade);
+       setlogolukartvalueStandart(kartfiyatlar.kartFiyat[1].Slogolukart);
+       setozelkartvalueStandart(kartfiyatlar.kartFiyat[1].Sozelkart);
+       setsadekartvaluePremium(kartfiyatlar.kartFiyat[0].Psade);
+       setlogolukartvaluepremium(kartfiyatlar.kartFiyat[0].Plogolukart);
+       setozelkartvaluePremium(kartfiyatlar.kartFiyat[0].Pozelkart);
+    
+    
+      }
+  }, [kartfiyatlar])
+
+
+  // user selector form 
+  const generalInfoOfUser= useSelector((state) => state.userSlice.user);
+
+  const [denemeAktivasyonu, setdenemeAktivasyonu]= useState(false)
+
+  useEffect(() => {
+
+    console.log("Perfctey",generalInfoOfUser && generalInfoOfUser.verificationCode  )
+
+    if(generalInfoOfUser && generalInfoOfUser !==null && generalInfoOfUser.verificationCode){
+      setdenemeAktivasyonu(true)
     }
-  }, [NormalToPremiumStatus]);
+  
+  }, [generalInfoOfUser])
+
+
+
+
+
+ 
+ 
+
+
+  const successNormalToPro=useSelector((state)=> state.userSlice.successUpdateToPro); 
+
+
+  useEffect(() => {
+
+    if(successNormalToPro !== null && successNormalToPro !== undefined){
+
+      if(successNormalToPro.Successfully){
+        setcodeVerificationSuccess(true);
+       setnormalTopremiumSetup(true);
+        
+      }else{
+        setcodeVeririficationFail(true);
+      }
+    }
+  
+  }, [successNormalToPro])
+
+
 
   function verification() {
+
+
+
+
     let codeValue = "";
     for (let i = 0; i < code.length; i++) {
       codeValue += code[i];
     }
+
+    console.log("kodVALUE",codeValue )
+    console.log("okkyourar",verificationCode )
     
-
-
     //acounType must be implemented on the user account before provision
     if (codeValue + "P" === verificationCode) {
+
+      //console.log("okkyourar",verificationCode )
+
+
+
       //her will be Kontrol from here
       dispatch(
         changeAccountTypeNormalToPremium({
@@ -394,8 +479,6 @@ console.log("hhdsj")
       );
 
       //dispatch will be here
-    } else {
-      setcodeVeririficationFail(true);
     }
 
     //setverificationCode
@@ -411,13 +494,17 @@ console.log("hhdsj")
   //check this right
   function checkRightTis() {
 
-    if (userData !== null && userData.secretKod) {
+      setlogogizli(!logogizli);
 
-      setcheckRight(!checkRight);
+  }
 
-    } else {
-      setexistSecretKod(false);
-    }
+  function updateOnlyDenemeOrdertType(){
+
+    dispatch(updateOnlydenemeOrderType({
+
+      karttypeTorder: standartCheckValue!=="" ? standartCheckValue : premiumCheckValue!=="" ? premiumCheckValue : ""
+
+    }))
 
   }
 
@@ -468,6 +555,16 @@ console.log("hhdsj")
   const [premiumAccountOneYear, setpremiumAccountOneYear] = useState(true);
 
 
+
+
+  var Difference_In_Days=0;
+var Diffrence_In_Days_StartDateCount= 0;
+var currentDate = new Date().toJSON();
+var date2 = new Date(currentDate);
+
+//const standart date kart date
+const [kartsahipDate, setkartsahipDate]= useState("")
+
   useEffect(() => {
 
 
@@ -476,12 +573,15 @@ console.log("hhdsj")
     }
 
     if (userData !== null && userData.hideLogo !== undefined  ) {
-        setcheckRight(userData.hideLogo);
+
+      setlogogizli(userData.hideLogo);
       }
 
 
     if (userData !== null && userData.accountNormalTo) {
+
       setverificationCode(userData.accountNormalTo);
+
     }
 
 
@@ -503,53 +603,49 @@ console.log("hhdsj")
     var accountTypeStartDate =
       userData && userData !== null ? userData.accountTypeStartDate : "";
 
-    var date1 = new Date(StartAccoutDate);
-    var date2 = new Date(currentDate);
-
-    var typeStartDate = new Date(accountTypeStartDate);
-
-    var Difference_In_Time = date2.getTime() - date1.getTime();
-
-    var Difference_In_Time_TypeStartDate =
-      date2.getTime() - typeStartDate.getTime();
-
-    var Difference_In_Days = Difference_In_Time / (1000 * 3600 * 24);
-    var Diffrence_In_Days_StartDateCount =
-      Difference_In_Time_TypeStartDate / (1000 * 3600 * 24);
-
-      console.log("TimeInChange::", Diffrence_In_Days_StartDateCount)
-      console.log("TimeInExhc::", Difference_In_Days)
 
 
-    if (Difference_In_Days >= 15 && carverificationCode === "") {
 
-      setcardNotPermission(true);
+      if(StartAccoutDate && StartAccoutDate!== null){
 
-    } 
-
-     if (Diffrence_In_Days_StartDateCount <= 60) {
-
-      //setaccountFirstTwoMonth(true);
-
-    }
-
-    if (Diffrence_In_Days_StartDateCount >= 364 && accountType === "Normal") {
-
-      setnormalAccountOneYear(false);
+        var date1 = new Date(StartAccoutDate);
+        
       
-    } else if (
-      Diffrence_In_Days_StartDateCount >= 364 &&
-      accountType === "Premium"
-    ) {
-      setpremiumAccountOneYear(false);
+        const oneDay = 1000 * 60 * 60 * 24;
+        const diffInTime = date2.getTime() - date1.getTime();
+      
+         Difference_In_Days = Math.round(diffInTime / oneDay);
+      
+      
+        console.log("differenceDuasH", Difference_In_Days);
+      
+      
+      
+      }
 
-      dispatch(
-        changeAccountTypeNormalToPremium({
-          secretKod: userData !== null ? userData.secretKod : "",
-          accountType: "Normal",
-        })
-      );
-    }
+    
+      if(accountTypeStartDate && accountTypeStartDate!==null){
+
+        var typeStartDate = new Date(accountTypeStartDate);
+      
+        const oneDaytWO = 1000 * 60 * 60 * 24;
+        const diffInTimetWO = date2.getTime() - typeStartDate.getTime();
+      
+         Diffrence_In_Days_StartDateCount = Math.round(diffInTimetWO / oneDaytWO);
+      
+        console.log("okwhatary",Diffrence_In_Days_StartDateCount )
+        setkartsahipDate(Diffrence_In_Days_StartDateCount)
+
+
+        if (Diffrence_In_Days_StartDateCount <= 60) {
+
+          setaccountFirstTwoMonth(true);
+        }
+      
+        
+
+      }
+
 
     //   set Normal and Premium account
 
@@ -558,13 +654,27 @@ console.log("hhdsj")
     } else if (accountType === "Premium") {
       setaccountTypePremium(true);
     }
+
+
+
+    
   }, [userData]);
 
   function hideLogoTo (){
+
+    console.log("onnn",logogizli)
     dispatch(upadateHideTotrue({
-        hideLogo: !checkRight
+        hideLogo: !logogizli
     }))
   }
+
+  const [normalTopremiumSetup, setnormalTopremiumSetup]= useState(false)
+
+
+  const yukseltBackgroundPremium=premiumCheckValue==="" ? "#e1e1e1" :"#8b8dff" ;
+  const yukseltBackgroundStanadrt=standartCheckValue==="" ? "#e1e1e1" :"#8b8dff" ;
+
+
 
 
 
@@ -684,7 +794,8 @@ console.log("hhdsj")
 
 
 {
-  codeVerificationSuccess && (
+  normalTopremiumSetup && (
+
   <div className="popup-global-center">
   <div className="popup-top"></div>
   <div className="popup">
@@ -746,11 +857,8 @@ Güzel günlerde kullanmanızı dileriz. <br />
 
     <div
       className="popup-button"
-      onClick={() => {
-        setkontrolcheckFromFirstRegis(true);
-      }}
     >
-      <button className="profile-save-buttonn"  onClick={(e)=>{e.preventDefault()  ;setkontrolCheckFirstStandart(false); upatePremiumTrue() }} >Tamam</button>
+      <button className="profile-save-buttonn"  onClick={(e)=>{e.preventDefault();setnormalTopremiumSetup(false); upatePremiumTrue() }} >Tamam</button>
     </div>
 
   </div>
@@ -921,7 +1029,7 @@ Güzel günlerde kullanmanızı dileriz. <br />
                   </div>
                 )}
 
-              {/* {codeVerificationSuccess && (
+              {codeVerificationSuccess && (
                 <div className="sms-code-area">
                   <div
                     className="close-button"
@@ -945,7 +1053,7 @@ Güzel günlerde kullanmanızı dileriz. <br />
 
                   </div>
                 </div>
-              )} */}
+              )}
 
               {codeVeririficationFail && (
                 
@@ -1024,12 +1132,12 @@ Güzel günlerde kullanmanızı dileriz. <br />
         {premiumCheck === true && userData && userData.isPremiumTrue === undefined && (
           <div className="popup-global">
             <div
-              onClick={() =>{ setpremiumCheck(!premiumCheck);}}
+              onClick={() =>{ setpremiumCheck(!premiumCheck);setpremiumCheckValue("") }}
               className="popup-top"
             ></div>
             <div className="popup">
               <div
-                onClick={() =>{ setpremiumCheck(!premiumCheck);}}
+                onClick={() =>{ setpremiumCheck(!premiumCheck); setpremiumCheckValue("")}}
                 className="close-button"
               >
                 <i
@@ -1124,7 +1232,7 @@ Güzel günlerde kullanmanızı dileriz. <br />
                                 <div style={{marginRight:"30px"}}>
                                 <span>
                                     <strong>
-                                    : 399 TL
+                                    : {sadekartvaluePremium} TL
                                     </strong>
                                
                                 </span>
@@ -1194,7 +1302,7 @@ Güzel günlerde kullanmanızı dileriz. <br />
                                 <div style={{marginRight:"70px"}}>
                                 <span>
                                     <strong>
-                                    : 449 TL
+                                    : {logolukartvaluepremium} TL
                                     </strong>
                                
                                 </span>
@@ -1263,7 +1371,7 @@ Güzel günlerde kullanmanızı dileriz. <br />
                                 <div style={{marginRight:"70px"}}>
                                 <span>
                                     <strong>
-                                    : 499 TL
+                                    : {ozelkartvaluePremium} TL
                                     </strong>
                                
                                 </span>
@@ -1286,12 +1394,13 @@ Güzel günlerde kullanmanızı dileriz. <br />
 
                         <Button
                           style={{
-                            backgroundColor: "#8b8dff",
-                            marginTop: "10px",
+                            backgroundColor:yukseltBackgroundPremium,
+                            marginTop: "30px",
                             color: "#FFF",
                             textTransform:"inherit"
                           }}
-                          onClick={() => setbankPopup(!bankPopup)}
+                          onClick={() =>{ setbankPopup(!bankPopup); updateOnlyDenemeOrdertType()}}
+                          disabled={premiumCheckValue==="" ? true : false}
                         >
 
                         Yükselt
@@ -1336,12 +1445,12 @@ Güzel günlerde kullanmanızı dileriz. <br />
         {standartCheck === true && (
           <div className="popup-global">
             <div
-              onClick={() =>{ setstandartCheck(!standartCheck); console.log("okkk",standartCheck )}}
+              onClick={() =>{ setstandartCheck(!standartCheck); setstandartCheckValue("")}}
               className="popup-top"
             ></div>
             <div className="popup">
               <div
-                onClick={() =>{ setstandartCheck(!standartCheck); console.log("okyuuu",standartCheck )}}
+                onClick={() =>{ setstandartCheck(!standartCheck); setstandartCheckValue("")}}
                 className="close-button"
               >
                 <i
@@ -1444,7 +1553,7 @@ Güzel günlerde kullanmanızı dileriz. <br />
                                 <div style={{marginRight:"30px"}}>
                                 <span>
                                     <strong>
-                                    : 349 TL
+                                    : {sadekartvalueStandart} TL
                                     </strong>
                                
                                 </span>
@@ -1513,7 +1622,7 @@ Güzel günlerde kullanmanızı dileriz. <br />
                                 <div style={{marginRight:"70px"}}>
                                 <span>
                                     <strong>
-                                    : 399 TL
+                                    : {logolukartvalueStandart} TL
                                     </strong>
                                
                                 </span>
@@ -1592,7 +1701,7 @@ Güzel günlerde kullanmanızı dileriz. <br />
                                 <div style={{marginRight:"70px"}}>
                                 <span>
                                     <strong>
-                                    : 449 TL
+                                    : {ozelkartvalueStandart} TL
                                     </strong>
                                
                                 </span>
@@ -1615,12 +1724,14 @@ Güzel günlerde kullanmanızı dileriz. <br />
 
                         <Button
                           style={{
-                            backgroundColor: "#8b8dff",
-                            marginTop: "10px",
+                            backgroundColor: yukseltBackgroundStanadrt,
+                            marginTop: "30px",
                             color: "#FFF",
                             textTransform:"inherit"
                           }}
-                          onClick={() => setbankPopup(!bankPopup)}
+                          onClick={() =>{ setbankPopup(!bankPopup); updateOnlyDenemeOrdertType()}}
+
+                          disabled={standartCheckValue==="" ? true : false}
                         >
 
                         Yükselt
@@ -1667,7 +1778,7 @@ Güzel günlerde kullanmanızı dileriz. <br />
 
 
 
-        {checkRight === true && accountFirstTwoMonth===true &&accountTypePremium===false && userData && userData.verificationCode ? (
+        {checkRight === true  &&accountTypePremium===false && userData && userData.verificationCode ? (
           <div className="popup-global">
             <div
               onClick={() => setcheckRight(!checkRight)}
@@ -2459,10 +2570,10 @@ Güzel günlerde kullanmanızı dileriz. <br />
 
 
 {
- profileData && profileData.verificationCode === undefined  && (
-
+denemeAktivasyonu===false && (
 
     <div className="main-card-global" style={{ marginTop:"15px"}}>
+
               <div className="main-card">
                 <div className="main-card-header"> Hesap Aktivasyonu</div>
 
@@ -2803,7 +2914,7 @@ onClick={()=> setpremiumCheck(true)}
 
 
               {
-                accountTypePremium !==false || accoutTypeNormal !== false &&  (
+                accountTypePremium !==false ? (
 
                   <div className="main-card-global">
                 <div className="main-card">
@@ -2812,33 +2923,15 @@ onClick={()=> setpremiumCheck(true)}
                       Hibrit Card logosunu gizle
                     </div>
 
-
-                    {
-
-accountFirstTwoMonth ===true && accountTypePremium===false &&  (
-
-    <div className="logo-hidden-lock" onClick={()=> setcheckRight(!checkRight)}>
-                      <div className="lock-text">
-                           Yükselt
-                        </div>
-                      <div className="lock-icon">
-                        <i className="fa-solid fa-lock"></i>
-                      </div>
-                    </div>
-
-
-)
-                    }
-
-                    
                     <div className="logo-hidden-checked">
                       <div className="switch-button">
                         <label
                           className="switch"
-                          value={checkRight}
+                          value={logogizli}
                           onChange={() => checkRightTis()}
+                          
                         >
-                          <input type="checkbox" checked={checkRight }  onClick={()=> hideLogoTo()}/>
+                          <input type="checkbox" checked={logogizli }  onClick={()=> hideLogoTo()}/>
                           <span className="slider round"></span>
                         </label>
                       </div>
@@ -2849,6 +2942,59 @@ accountFirstTwoMonth ===true && accountTypePremium===false &&  (
                   </div>
                 </div>
               </div>
+                ) : accoutTypeNormal !== false && kartsahipDate <=60 ? (
+
+                  <div className="main-card-global">
+                  <div className="main-card">
+                    <div className="logo-hidden-area">
+                      <div className="logo-hidden-text">
+                        Hibrit Card logosunu gizle
+                      </div>
+
+                  
+  
+                      
+                      <div className="logo-hidden-checked">
+                        <div className="switch-button">
+                          <label
+                            className="switch"
+                            value={logogizli}
+                            onChange={() => checkRightTis()}
+                          >
+                            <input type="checkbox" checked={logogizli}  onClick={()=> hideLogoTo()}/>
+                            <span className="slider round"></span>
+                          </label>
+                        </div>
+                      </div>
+  
+  
+  
+                    </div>
+                  </div>
+                </div>
+
+                ):(
+                  <div className="main-card-global">
+                  <div className="main-card">
+                    <div className="logo-hidden-area">
+                     
+  
+      <div className="logo-hidden-lock" style={{
+        marginLeft:"auto", marginRight:"auto"
+      }} onClick={()=> setcheckRight(!checkRight)}>
+                        <div className="lock-text">
+                             Yükselt
+                          </div>
+                        <div className="lock-icon">
+                          <i className="fa-solid fa-lock"></i>
+                        </div>
+                      </div>
+
+
+
+                    </div>
+                  </div>
+                </div>
                 )
               }
             

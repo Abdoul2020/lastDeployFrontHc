@@ -326,6 +326,9 @@ function SelectProfile() {
   const [cardNotPermission, setcardNotPermission] = useState(false);
   const [cardtwoWeeksRemain, setcardtwoWeeksRemain] = useState(false);
 
+  const [standartRemainTwoWeeks, setstandartRemainTwoWeeks]= useState(false);
+  const [stanadartHediyeBitti, setstanadartHediyeBitti]= useState(false);
+
   const [accountFirstTwoMonth, setaccountFirstTwoMonth] = useState(false);
 
   const [accoutTypeNormal, setaccoutTypeNormal] = useState(false);
@@ -341,7 +344,6 @@ function SelectProfile() {
   const [verificationCode, setverificationCode] = useState("");
 
   // finish date get form here
-
   function addDays(date, days) {
     date.setDate(date.getDate() + days);
     return date;
@@ -355,7 +357,34 @@ function SelectProfile() {
 
   const FinishExactDate = newDate.toLocaleDateString();
 
+
+  //STandart finish date
+  // finish date get form here
+  function standartFinishDate(date, days) {
+    date.setDate(date.getDate() + days);
+    return date;
+  }
+
+  const premiumHediyeStartDate= userData && userData !== null && userData.accountTypeStartDate;
+  const transformToDateStandart = new Date(premiumHediyeStartDate != "" && premiumHediyeStartDate);
+  const newDateStandartTofinish = standartFinishDate(transformToDateStandart, 60);
+
+  const FinishExactDateStandart = newDateStandartTofinish.toLocaleDateString();
+
+  
+
+
+
+
+
+var Difference_In_Days=0;
+var Diffrence_In_Days_StartDateCount= 0;
+var currentDate = new Date().toJSON();
+var date2 = new Date(currentDate);
+
+
   useEffect(() => {
+
     var StartAccoutDate =
       userData && userData !== null && userData.startDateCount;
     var carverificationCode =
@@ -366,67 +395,98 @@ function SelectProfile() {
       userData && userData !== null && userData.accountType
         ? userData.accountType
         : "";
-    var currentDate = new Date().toJSON();
+   
+
     console.log("startDate::", StartAccoutDate);
     console.log("cuurentDate::", currentDate);
 
     var accountTypeStartDate =
       userData && userData !== null ? userData.accountTypeStartDate : "";
 
-    var date1 = new Date(StartAccoutDate);
-    var date2 = new Date(currentDate);
-
-    console.log("gunnTolookAt", date1);
+      console.log("hjdsfuyoo",  accountTypeStartDate)
 
 
-    console.log("zamanT1", date2);
-    console.log("zamanT2", date1);
+if(StartAccoutDate && StartAccoutDate!== null){
 
-    //calculate total number of seconds between two dates
-    var total_seconds = Math.abs(date2 - date1) / 1000;
-    //calculate days difference by dividing total seconds in a day
-    var Difference_In_Days = Math.floor(total_seconds / (60 * 60 * 24));
+  var date1 = new Date(StartAccoutDate);
+  
 
-    console.log("differenceDuasH", Difference_In_Days);
+  const oneDay = 1000 * 60 * 60 * 24;
+  const diffInTime = date2.getTime() - date1.getTime();
 
-    var typeStartDate = new Date(accountTypeStartDate);
-    var total_seconds_TypeStartDate = Math.abs(date2 - typeStartDate) / 1000;
-    var Diffrence_In_Days_StartDateCount = Math.floor(
-      total_seconds_TypeStartDate / (60 * 60 * 24)
+   Difference_In_Days = Math.round(diffInTime / oneDay);
+
+
+  console.log("differenceDuasH", Difference_In_Days);
+
+  if (Difference_In_Days >= 60 && carverificationCode === "") {
+      
+    setcardNotPermission(true);
+    // setcardtwoWeeksRemain(true);
+  } else if (Difference_In_Days >= 45  && Difference_In_Days <=59 && carverificationCode === "") {
+
+    setcardtwoWeeksRemain(true);
+
+  }
+
+
+}
+
+
+
+if(accountTypeStartDate && accountTypeStartDate!==null){
+
+  var typeStartDate = new Date(accountTypeStartDate);
+
+  const oneDaytWO = 1000 * 60 * 60 * 24;
+  const diffInTimetWO = date2.getTime() - typeStartDate.getTime();
+
+   Diffrence_In_Days_StartDateCount = Math.round(diffInTimetWO / oneDaytWO);
+
+  console.log("okwhatary",Diffrence_In_Days_StartDateCount )
+
+  if (Diffrence_In_Days_StartDateCount <= 60) {
+
+    console.log("howmanydays", Diffrence_In_Days_StartDateCount)
+    setaccountFirstTwoMonth(true);
+    setcardNotPermission(false);
+    setcardtwoWeeksRemain(false);
+  }
+
+  if(Diffrence_In_Days_StartDateCount >= 45 && Diffrence_In_Days_StartDateCount <=59 ){
+    setstandartRemainTwoWeeks(true);
+  }
+
+  if(Diffrence_In_Days_StartDateCount >= 60 && accountType === "Normal" ){
+
+    setstandartRemainTwoWeeks(false);
+    setstanadartHediyeBitti(true);
+
+  }
+
+
+
+  if (Diffrence_In_Days_StartDateCount >= 364 && accountType === "Normal") {
+
+    setnormalAccountOneYear(false);
+    setstanadartHediyeBitti(false);
+    setstandartRemainTwoWeeks(false);
+
+  }
+  if (Diffrence_In_Days_StartDateCount >= 364 && accountType === "Premium") {
+
+    setpremiumAccountOneYear(false);
+
+    dispatch(
+      changeAccountTypeNormalToPremium({
+        secretKod: userData !== null ? userData.secretKod : "",
+        accountType: "Normal",
+      })
     );
+  }
 
-    // var Difference_In_Time = date2.getTime() - date1.getTime();
-    // var Difference_In_Days = Difference_In_Time / (1000 * 3600 * 24);
 
-    // var Difference_In_Time_TypeStartDate =date2.getTime() - typeStartDate.getTime();
-    // var Diffrence_In_Days_StartDateCount =Difference_In_Time_TypeStartDate / (1000 * 3600 * 24);
-
-    if (Difference_In_Days >= 60 && carverificationCode === "") {
-      setcardNotPermission(true);
-      // setcardtwoWeeksRemain(true);
-    } else if (Difference_In_Days >= 45 && carverificationCode === "") {
-      setcardtwoWeeksRemain(true);
-    }
-
-    if (Diffrence_In_Days_StartDateCount <= 60) {
-      setaccountFirstTwoMonth(true);
-      setcardNotPermission(false);
-      setcardtwoWeeksRemain(false);
-    }
-
-    if (Diffrence_In_Days_StartDateCount >= 364 && accountType === "Normal") {
-      setnormalAccountOneYear(false);
-    }
-    if (Diffrence_In_Days_StartDateCount >= 364 && accountType === "Premium") {
-      setpremiumAccountOneYear(false);
-
-      dispatch(
-        changeAccountTypeNormalToPremium({
-          secretKod: userData !== null ? userData.secretKod : "",
-          accountType: "Normal",
-        })
-      );
-    }
+}
 
     //   set Normal and Premium account
 
@@ -435,6 +495,14 @@ function SelectProfile() {
     } else if (accountType === "Premium") {
       setaccountTypePremium(true);
     }
+
+    if (userData !== null && userData.accountNormalTo) {
+
+      setverificationCode(userData.accountNormalTo);
+      
+    }
+
+
   }, [userData]);
 
   // start count from here when nromal card remain here
@@ -496,11 +564,25 @@ function SelectProfile() {
     (state) => state.userSlice.accountTypeChangeStatus
   );
 
+  const successNormalToPro=useSelector((state)=> state.userSlice.successUpdateToPro); 
+
+
   useEffect(() => {
-    if (NormalToPremiumStatus !== null && NormalToPremiumStatus === "success") {
-      setcodeVerificationSuccess(true);
+
+    if(successNormalToPro !== null && successNormalToPro !== undefined){
+
+      console.log("okkkko", successNormalToPro)
+
+      if(successNormalToPro.Successfully){
+        setcodeVerificationSuccess(true);
+      }else{
+        console.log("okkhu")
+        setcodeVeririficationFail(true);
+      }
     }
-  }, [NormalToPremiumStatus]);
+  
+  }, [successNormalToPro])
+
 
   function verification() {
     let codeValue = "";
@@ -518,8 +600,6 @@ function SelectProfile() {
       );
 
       //dispatch will be here
-    } else {
-      setcodeVeririficationFail(true);
     }
 
     //setverificationCode
@@ -568,7 +648,7 @@ function SelectProfile() {
       {userStatus == "loading" ? <Loading /> : ""}
 
       {checkRight === true ? (
-        <div className="popup-global">
+        <div className="popup-global" style={{zIndex:"9999"}}>
           <div
             onClick={() => setcheckRight(!checkRight)}
             className="popup-top"
@@ -1197,12 +1277,14 @@ function SelectProfile() {
             >
               <button className="profile-save-buttonn">Tamam</button>
             </div>
+
+
           </div>
         </div>
       )}
 
       {kodValueExist && (
-        <div className="popup-global">
+        <div className="popup-global" style={{zIndex:"9999"}}>
           <div className="popup-top"></div>
 
           <div className="popup">
@@ -1338,6 +1420,114 @@ function SelectProfile() {
         </div>
       )}
 
+
+      {
+
+        stanadartHediyeBitti===true && (
+
+          <div className="popup-global-center">
+          <div className="popup-top"></div>
+          <div className="popup">
+            {/* <div onClick={() => { setNewProfilePopup(false); setNewProfileError() }} className='close-button'>
+        <i className="fa-solid fa-xmark"></i>
+        </div> */}
+
+            <div
+              style={{
+                textAlign: "center",
+                color: "red",
+              }}
+            >
+              <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+
+            <div className="header-text">Bilgilendirme</div>
+
+            <div
+              style={{
+                paddingLeft: "30px",
+                paddingRight: "30px",
+                paddingBottom: "20px",
+                color: "rgba(0, 0, 0, 0.5)",
+                textAlign: "center",
+              }}
+            >
+              <strong>
+               Premium  Hediye Süresi dolmuştur. <br />
+            
+              </strong>
+              <br />
+              8 ay boyunca 1 profil Kullanabilirsiniz <br />
+              <br /> <br />
+              <span
+                style={{
+                  width: "100%",
+                  fontWeight: "500",
+                  fontSize: "14px",
+                  lineHeight: "12px",
+                }}
+              >
+                Premium hesap ile 6 adete kadar Profil oluşturabilir ve
+                gelişmiş arayüz özelliklerini deneyimleyebilisiniz. <br />
+                Premium Hesap avantajlarından faydalanmak için şimdi satın
+                alabilirsiniz.
+              </span>
+              <br />
+              <br />
+              <span
+                style={{
+                  textAlign: "center",
+                  width: "100%",
+                  margin: "20px",
+                  fontFamily: "Montserrat",
+                  fontStyle: "normal",
+                  fontWeight: "500",
+                  fontSize: "14px",
+                  lineHeight: "12px",
+                  textDecorationLine: "underline",
+                  color: " #9ED5FF",
+                  // color:"rgb(139, 141, 255)",
+                }}
+                onClick={() => {
+                  setcheckRight(true);
+                  setstanadartHediyeBitti(false);
+                }}
+              >
+                Yükselt
+              </span>
+            </div>
+
+            {/* <div className='popup-input '>
+        <div className="content-input"><input value={newProfile.profileTag} onChange={(e) => setNewProfile(v => ({ ...v, profileTag: e.target.value }))} type="text" placeholder="Porfil Etiketi" /></div>
+        </div> */}
+            {/* <div className='error-text' >
+        {newProfileError}
+        </div> */}
+
+            <div
+              className="popup-button"
+              onClick={() => {
+                setstanadartHediyeBitti(false);
+              }}
+            >
+
+              <button
+                className="profile-save-buttonn"
+              >
+                Tamam
+              </button>
+
+
+            </div>
+          </div>
+        </div>
+
+
+        )
+
+
+      }
+
       {userData &&
         userData !== null &&
         userData.isStanadrtTrue === undefined &&
@@ -1392,7 +1582,7 @@ function SelectProfile() {
                 </span>
                 <br />
                 <br />
-                <span
+                {/* <span
                   style={{
                     textAlign: "center",
                     width: "100%",
@@ -1412,7 +1602,7 @@ function SelectProfile() {
                   }}
                 >
                   Yükselt
-                </span>
+                </span> */}
               </div>
 
               {/* <div className='popup-input '>
@@ -1588,8 +1778,7 @@ function SelectProfile() {
                       : ""
                   }`}>
 
-<a
-                >
+
                   <span
                     style={{
                       textAlign: "center",
@@ -1604,10 +1793,13 @@ function SelectProfile() {
                       color: " #9ED5FF",
                       // color:"rgb(139, 141, 255)",
                     }}
+
+                    onClick={() => dispatch(selectedProfile(profileDataLocal.length > 0
+                      && profileDataLocal[0].profileId))}
                   >
                     Şimdi Satın Al
                   </span>
-                </a>
+                
                 
                 </Link>
 
@@ -1734,6 +1926,61 @@ function SelectProfile() {
             )}
           </div>
 
+
+          {
+
+normalAccountOneYear===false && (
+
+  <div className="popup-global-center">
+              <div
+                onClick={() => {
+                  setNewProfilePopup(false);
+                  setNewProfileError();
+                }}
+                className="popup-top"
+              ></div>
+              <div className="popup">
+                {/* <div
+                  onClick={() => {
+                    setcardNotPermission(false);
+                  }}
+                  className="close-button"
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </div> */}
+
+                <div className="header-text">
+                  {" "}
+                  Hibrit Card'ı kullandığınız için Teşekkür ederiz! <br /> <br />
+                  Standart 1 Yıl süreniz dolmuştur. <br /> <br />
+                  Kullanmaya devam etmek için lütfen hesabınızı yükseltin.
+                </div>
+
+                <div
+                  className="popup-button"
+                >
+                 
+                    <a
+                      style={{
+                        textDecoration: "none",
+
+                        width: "100%",
+                        display: "flex",
+                        justifyContent: "stretch",
+                        alignItems: "center",
+                      }}
+                    >
+                      <button className="profile-save-buttonn" onClick={()=> setcheckRight(true)}> Yükselt</button>
+                    </a>
+              
+                </div>
+              </div>
+            </div>
+)
+
+
+          }
+
           {cardNotPermission === true && (
             <div className="popup-global-center">
               <div
@@ -1797,6 +2044,77 @@ function SelectProfile() {
               </div>
             </div>
           )}
+
+          {/* standart remain two weeks from here */}
+
+
+
+
+
+          {
+
+standartRemainTwoWeeks===true && (
+
+  <div className="popup-global-center">
+  <div
+    onClick={() => {
+      setstandartRemainTwoWeeks(false);
+    }}
+    className="popup-top"
+  ></div>
+  <div className="popup">
+    {/* <div
+      onClick={() => {
+        setstandartRemainTwoWeeks(false);
+      }}
+      className="close-button"
+    >
+      <i className="fa-solid fa-xmark"></i>
+    </div> */}
+
+    <div className="header-text">
+      {" "}
+      Hibrit Card'ı Kullandığınız için Teşekkür ederiz! <br /> <br />
+      Premium Hediye süreniz &nbsp;
+      <strong>{FinishExactDateStandart}</strong>
+      &nbsp; tarihinde dolacaktır. <br /> <br />
+      Kullanmaya devam etmek için lütfen hesabınızı yükseltin.
+    </div>
+
+    {/* <div className='popup-input '>
+                <div className="content-input"><input value={newProfile.profileTag} onChange={(e) => setNewProfile(v => ({ ...v, profileTag: e.target.value }))} type="text" placeholder="Porfil Etiketi" /></div>
+            </div> */}
+    {/* <div className='error-text' >
+                {newProfileError}
+            </div> */}
+
+    <div
+      className="popup-button"
+    >
+
+
+
+<div
+              className="popup-button"
+              onClick={() => {
+                setstandartRemainTwoWeeks(false);
+              }} 
+              style={{width:"100%"}}
+            >
+              <button className="profile-save-buttonn">Tamam</button>
+            </div>
+
+    </div>
+
+   
+
+
+
+
+  </div>
+</div>
+)
+}
 
           {cardtwoWeeksRemain === true && (
             <div className="popup-global-center">
@@ -1872,7 +2190,7 @@ function SelectProfile() {
                 className="select-profile-items select-profile-items-noedit"
                 style={{
                   alignContent: "center",
-                  justifyContent: "center",
+                  justifyContent: "center ",
                   gap: "20px",
                   gridAutoFlow: "column",
                   gridTemplateColumns: "none",
@@ -2533,7 +2851,9 @@ function SelectProfile() {
                 )}
               </div>
             ) : arrayisSix === true ? (
-              <div className="select-profile-items select-profile-items-noedit">
+              <div 
+               className={`select-profile-items ${accountFirstTwoMonth===false ? "" : "select-profile-items-noedit"}`}
+              >
                 {accountFirstTwoMonth === false ? (
                   <div
                     onClick={() =>

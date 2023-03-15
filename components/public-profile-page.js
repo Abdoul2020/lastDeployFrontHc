@@ -29,7 +29,11 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import Typography from '@mui/material/Typography';
 
-import * as fs from 'fs'
+import { useSelector, useDispatch } from "react-redux";
+
+
+import { getPanelAsync, getUserAsync, getOnlyuserTop,updateClickCountContact,updateClickCountSosyalUrl,updateClickCountBankaClick,
+  updateClickCountUploadFileClick,updateClickCountCustomerFormFileClick, updateClickCountFaturaClick } from "../stores/userSlice";
 
 
 
@@ -101,13 +105,36 @@ function PublicProfilePage({
 
   console.log("Tekrar bak buna ben",allProfileSort )
 
+  console.log("allPankk",allPanelSort )
+  console.log("dataafdgg",selectedProfileData )
+
+  
+
   
   const imagePath = selectedProfileData && selectedProfileData.profileUrl
 
- 
-  const base64= btoa(imagePath)
+  const dispatch = useDispatch();
+
+  
+  useEffect(() => {
+
+    
+    if(selectedProfileData &&  selectedProfileData.eMail){
+
+      console.log("hhajshsjd")
+
+      dispatch(getOnlyuserTop({
+        eMail:selectedProfileData &&  selectedProfileData.eMail
+      } ))
+
+    }
+  
+  }, [selectedProfileData])
+
+  
 
  
+  const base64= btoa(imagePath)
 
   const myVCard = new VCard();
   const myVCard2 = new VCard();
@@ -242,17 +269,12 @@ function PublicProfilePage({
 
 if(v.type==="conatctAddForm" && v.panelPhoneNumbers){
 
-v.panelPhoneNumbers.map((w,a)=>{
+  v.panelPhoneNumbers.map((w, a) => {
 
-  myVCard
-  .addPhoneNumber(
+    myVCard.addPhoneNumber("+"+w.phoneNumber, `PREF;${w.phoneTipi==="EV"? "HOME":w.phoneTipi==="İŞ"? "WORK": w.phoneTipi==="CEP" ? "CELL":""}` );
+    
 
-      "+"+w.phoneNumber,
-    "PREF;KİŞİSEL"
-  )
-
-
-})
+  })
 
 }
 
@@ -369,6 +391,10 @@ v.panelEmailPostas.map((w,a)=>{
     element.click();
 
   };
+
+
+
+
 
 
 
@@ -559,6 +585,99 @@ v.panelEmailPostas.map((w,a)=>{
 
 
   }, [allPanelSort]);
+
+
+ 
+
+
+
+  const userOnlyForm = useSelector((state)=> state.userSlice.userInfoOnly);
+  const userInfoToShowOnProfile =  useSelector((state)=> state.userSlice.userInfoToShowOnPublic);
+
+  const [accountTypeToCalculate, setaccountTypeToCalculate]= useState("");
+  const [accountDateNumberStartDate, setaccountDateNumberStartDate]= useState("");
+  const [accountTypeStartDateToshow, setaccountTypeStartDateToshow]= useState("");
+
+  useEffect(() => {
+
+    console.log("tipiii",accountTypeToCalculate )
+  
+  }, [accountTypeToCalculate])
+
+  useEffect(() => {
+
+    console.log("datapo", accountTypeStartDateToshow)
+  
+  }, [accountTypeStartDateToshow])
+
+
+  var currentDate = new Date().toJSON();
+  var date2 = new Date(currentDate);
+  
+
+  useEffect(() => {
+
+    if(userInfoToShowOnProfile !== null && userInfoToShowOnProfile !== undefined){
+
+     console.log("toshowOndata", userInfoToShowOnProfile.accountTypeStartDate)
+
+     if(userInfoToShowOnProfile.accountTypeStartDate){
+
+      
+
+      var typeStartDate = new Date(userInfoToShowOnProfile.accountTypeStartDate);
+      console.log("djsks",typeStartDate )
+
+      const oneDaytWO = 1000 * 60 * 60 * 24;
+      const diffInTimetWO = date2.getTime() - typeStartDate.getTime();
+      console.log("hdhuoo", diffInTimetWO)
+    
+       var  Diffrence_In_Days_StartDateCount = Math.round(diffInTimetWO / oneDaytWO);
+      console.log("okwhatary",Diffrence_In_Days_StartDateCount )
+
+
+      setaccountTypeStartDateToshow(Diffrence_In_Days_StartDateCount)
+
+
+     
+     }
+
+     if(userInfoToShowOnProfile.startDateCount){
+      var date1 = new Date(userInfoToShowOnProfile.startDateCount);
+
+ const oneDay = 1000 * 60 * 60 * 24;
+  const diffInTime = date2.getTime() - date1.getTime();
+
+   var Difference_In_Days = Math.round(diffInTime / oneDay);
+
+  console.log("differenceDuasH", Difference_In_Days);
+
+  setaccountDateNumberStartDate(Difference_In_Days);
+
+
+     }
+
+
+     if(userInfoToShowOnProfile.accountType){
+      setaccountTypeToCalculate(userInfoToShowOnProfile.accountType)
+     }
+      
+    }
+  
+  }, [userInfoToShowOnProfile])
+
+  
+
+  const [hideLogowe, sethideLogowe]= useState(true)
+  useEffect(() => {
+
+    console.log("yooo", userOnlyForm)
+
+    sethideLogowe(userOnlyForm)
+    
+  }, [userOnlyForm])
+
+
 
   function shareAllData() {
     try {
@@ -909,6 +1028,78 @@ const [allprofilePopup, setallprofilePopup]= useState(false);
 
 
 
+ // update contact click from herere
+ function  updateContactPanelClick(data){
+  console.log("ygtt", data)
+
+  dispatch(updateClickCountContact({
+
+    contactDataId: data.contactDataId,
+    clickCountNumber:data.clickCountNumber? data.clickCountNumber+1 : 1
+
+  }))
+}
+
+
+  // update Sosyal click from herere
+  function  updateSosyalPanelClick(data){
+
+    console.log("ygtt", data)
+
+    dispatch(updateClickCountSosyalUrl({
+      sosyalUrlLink: data.panelProfileUrlDataId,
+      clickCountNumber:data.clickCountNumber? data.clickCountNumber+1 : 1
+    }))
+
+  }
+//banka click count
+function  updateBankaPanelClick(data){
+  console.log("ygtt", data)
+
+  dispatch(updateClickCountBankaClick({
+    bankDataId: data.BankDataId,
+    clickCountNumber:data.clickCountNumber? data.clickCountNumber+1 : 1
+  }))
+
+}
+
+
+
+  //file Upload click count
+  function  updateUploadFilePanelClick(data){
+    console.log("ygtt", data)
+
+    dispatch(updateClickCountUploadFileClick({
+      uploadFileId: data.belgeDocumentId,
+      clickCountNumber:data.clickCountNumber? data.clickCountNumber+1 : 1
+    }))
+
+  }
+
+
+//file  click customer form count
+  function  updatecustomerPanelClick(data){
+    console.log("ygtt", data)
+
+    dispatch(updateClickCountCustomerFormFileClick({
+      customerPanelId: data.documentDataFormId,
+      clickCountNumber:data.clickCountNumber? data.clickCountNumber+1 : 1
+    }))
+
+  }
+
+  //file  click count
+  function  updatefatuaraPanelClick(data){
+    console.log("ygtt", data)
+
+    dispatch(updateClickCountFaturaClick({
+      faturaDataId: data.faturaDataId,
+      clickCountNumber:data.clickCountNumber? data.clickCountNumber+1 : 1
+    }))
+
+  }
+
+
   return (
 
     <>
@@ -934,41 +1125,47 @@ const [allprofilePopup, setallprofilePopup]= useState(false);
               overflow:"auto"
             }}>
 
-          {allProfileSort.map((v,i) => (
-            <div key={v.profileId}>
+              {
+
+accountTypeToCalculate==="Normal" && accountTypeStartDateToshow < 60 ? (
+
+  allProfileSort.map((v,i) =>{
+
+    return (
+      <div key={v.profileId}>
+     
+      <a className="select-profile-item" href={`/id/${parentUrl}/${v.profileId}`} style={{
+        flexDirection: "inherit",
+        margin: "5px 26px",
+        
+
+      }}>
+        
+        <div className="select-profile-item-in">
+
+          <div className="select-profile-image-noedit select-profile-public">
+            <div className="select-profile-item-top"> </div>
+
+            <ImageLoader
+              src={v.profileUrl}
+              wrapper={React.createFactory("div")}
+              preloader={preloader}
+
+              style={{
+                width:"45px",
+                height:"45px"
+              }}
              
-                <a className="select-profile-item" href={`/id/${parentUrl}/${v.profileId}`} style={{
-                  flexDirection: "inherit",
-                  margin: "5px 26px",
-                  
+            >
+              Image load failed!
+            </ImageLoader>
+          </div>
+        </div>
 
-                }}>
-                  
-                  <div className="select-profile-item-in">
+        <div className="select-profile-text" style={{
+            marginTop:"-40px",
 
-                    <div className="select-profile-image-noedit select-profile-public">
-                      <div className="select-profile-item-top"> </div>
-
-                      <ImageLoader
-                        src={v.profileUrl}
-                        wrapper={React.createFactory("div")}
-                        preloader={preloader}
-
-                        style={{
-                          width:"45px",
-                          height:"45px"
-                        }}
-                       
-                      >
-                        Image load failed!
-                      </ImageLoader>
-                    </div>
-                  </div>
-
-                  <div className="select-profile-text" style={{
-                      marginTop:"-40px",
-
-                      fontFamily: 'Montserrat',
+            fontFamily: 'Montserrat',
 fontstyle: "normal",
 fontweight: "700",
 fontsize: "11px",
@@ -977,23 +1174,165 @@ color: "rgba(0, 0, 0, 0.5)"
 
 
 
-                    }}> {v.profileTag} </div>
+          }}> {v.profileTag} </div>
 
 
-            {
-              selectedProfileData.profileId=== v.profileId &&(
+  {
+    selectedProfileData.profileId=== v.profileId &&(
 <div class="pulsating-circle"></div>
-              )
-            }        
+    )
+  }        
 
-                </a>{" "}
+      </a>{" "}
+   
+  </div>
+
+    )
+  })
+
+
+
+): accountTypeToCalculate==="Normal" && accountTypeStartDateToshow > 365 ? (
+
+""
+
+) : accountTypeToCalculate==="Normal" && accountTypeStartDateToshow > 60 ? 
+(
+
+  <div >
+     
+  <a className="select-profile-item" href={`/id/${parentUrl}/${allProfileSort[0].profileId}`} style={{
+    flexDirection: "inherit",
+    margin: "5px 26px",
+    
+
+  }}>
+    
+    <div className="select-profile-item-in">
+
+      <div className="select-profile-image-noedit select-profile-public">
+        <div className="select-profile-item-top"> </div>
+
+        <ImageLoader
+          src={allProfileSort[0].profileUrl}
+          wrapper={React.createFactory("div")}
+          preloader={preloader}
+
+          style={{
+            width:"45px",
+            height:"45px"
+          }}
+         
+        >
+          Image load failed!
+        </ImageLoader>
+      </div>
+    </div>
+
+    <div className="select-profile-text" style={{
+        marginTop:"-40px",
+
+        fontFamily: 'Montserrat',
+fontstyle: "normal",
+fontweight: "700",
+fontsize: "11px",
+lineheight: "13px",
+color: "rgba(0, 0, 0, 0.5)"
+
+
+      }}> {allProfileSort[0].profileTag} </div>
+
+
+{
+selectedProfileData.profileId=== allProfileSort[0].profileId &&(
+<div class="pulsating-circle"></div>
+)
+}        
+  </a>
+
+</div>
+
+): (
+  ""
+)
+
+              }
+
+
+              {
+
+accountTypeToCalculate==="Premium" && accountTypeStartDateToshow <= 364 ?(
+
+  allProfileSort.map((v,i) =>{
+
+    return (
+
+      <div key={v.profileId}>
+     
+      <a className="select-profile-item" href={`/id/${parentUrl}/${v.profileId}`} style={{
+        flexDirection: "inherit",
+        margin: "5px 26px",
+        
+
+      }}>
+        
+        <div className="select-profile-item-in">
+
+          <div className="select-profile-image-noedit select-profile-public">
+            <div className="select-profile-item-top"> </div>
+
+            <ImageLoader
+              src={v.profileUrl}
+              wrapper={React.createFactory("div")}
+              preloader={preloader}
+
+              style={{
+                width:"45px",
+                height:"45px"
+              }}
              
-            </div>
-          ))}
+            >
+              Image load failed!
+            </ImageLoader>
+          </div>
         </div>
 
+        <div className="select-profile-text" style={{
+            marginTop:"-40px",
+
+            fontFamily: 'Montserrat',
+fontstyle: "normal",
+fontweight: "700",
+fontsize: "11px",
+lineheight: "13px",
+color: "rgba(0, 0, 0, 0.5)"
 
 
+
+          }}> {v.profileTag} </div>
+
+
+  {
+    selectedProfileData.profileId=== v.profileId &&(
+<div class="pulsating-circle"></div>
+    )
+  }        
+
+      </a>{" "}
+   
+  </div>
+
+    )
+  })
+
+
+): (
+  ""
+)
+              }
+
+          
+        </div>
 
           </div>
         </div>
@@ -1378,7 +1717,7 @@ color: "rgba(0, 0, 0, 0.5)"
 
       {/* the new Div End from here */}
       {/* //Social Media Kontroluı here */}
-      <div className="profile-content">
+      <div className="profile-content" style={{paddingBottom:"50px"}}>
         <div className="profile-dropdown">
 
           {/* <div onClick={() => OpenDropdownItem(0)} className="dropdown-header">
@@ -1577,7 +1916,8 @@ color: "rgba(0, 0, 0, 0.5)"
 
                 
                 <div
-                  onClick={() => OpenDropdownItem(i + 2)}
+                  onClick={() => {OpenDropdownItem(i + 2); updateContactPanelClick(v); updateSosyalPanelClick(v); updateBankaPanelClick(v); updateUploadFilePanelClick(v);
+                    updatecustomerPanelClick(v); updatefatuaraPanelClick(v)   }}
 
                   className="dropdown-header"
                 >
@@ -2657,13 +2997,18 @@ target="_blank" style={{
                           v.bankDataAll.map((e, p) => {
                             return (
                               <>
-                                {e.accountOwner && e.accountOwner !== "" && (
+                              {e.accountOwner &&
+                                e.accountOwner !== "" && (
                                   <div className="in-item">
                                     <div className="image">
                                       {selectedProfileData &&
                                       selectedProfileData.profileTheme ==
                                         "light" ? (
-                                        <img src="/icons/user_3-AEAEB4.svg" />
+                                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                          <path fill-rule="evenodd" clip-rule="evenodd" d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4Z" fill="#AEAEB4"/>
+                                          <path fill-rule="evenodd" clip-rule="evenodd" d="M12 8C10.8954 8 10 8.89543 10 10C10 11.1046 10.8954 12 12 12C13.1046 12 14 11.1046 14 10C14 8.89543 13.1046 8 12 8ZM8 10C8 7.79086 9.79086 6 12 6C14.2091 6 16 7.79086 16 10C16 12.2091 14.2091 14 12 14C9.79086 14 8 12.2091 8 10Z" fill="#AEAEB4"/>
+                                          <path fill-rule="evenodd" clip-rule="evenodd" d="M12 17C9.90941 17 8.03384 17.9152 6.74972 19.3701L5.25024 18.0466C6.89791 16.1798 9.31178 15 12 15C14.6882 15 17.1021 16.1798 18.7497 18.0466L17.2502 19.3701C15.9661 17.9152 14.0906 17 12 17Z" fill="#AEAEB4"/>
+                                          </svg>                                                
                                       ) : (
                                         <svg
                                           width="24"
@@ -2689,9 +3034,9 @@ target="_blank" style={{
                                     </div>
                                     <div className="text">
                                       <span>
-                                        {/* {selectedProfileData.publicName &&selectedProfileData.publicName +
-                                " " +
-                              selectedProfileData.publicSurName && selectedProfileData.publicSurName} */}
+                                        {/* { selectedProfileData.publicName && selectedProfileData.publicName +
+                            " " +
+                            selectedProfileData.publicSurName &&   selectedProfileData.publicSurName} */}
 
                                         {e.accountOwner}
                                       </span>
@@ -2699,140 +3044,246 @@ target="_blank" style={{
                                   </div>
                                 )}
 
-                                {e.bankName && e.bankName !== "" && (
+                              {e.bankName && e.bankName !== "" && (
+                                <div className="in-item">
+                                  <div className="image">
+                                    {selectedProfileData &&
+                                    selectedProfileData.profileTheme ==
+                                      "light" ? (
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M13.9036 4.85668C12.7971 3.94825 11.2029 3.94825 10.0964 4.85668L4.73093 9.26166C4.2682 9.64155 4 10.2088 4 10.8074V18C4 19.1046 4.89543 20 6 20H18C19.1046 20 20 19.1046 20 18V10.8074C20 10.2088 19.7318 9.64155 19.2691 9.26166L13.9036 4.85668ZM8.82732 3.31089C10.6715 1.79685 13.3285 1.79685 15.1727 3.31089L20.5381 7.71587C21.4636 8.47565 22 9.61006 22 10.8074V18C22 20.2091 20.2091 22 18 22H6C3.79086 22 2 20.2091 2 18V10.8074C2 9.61006 2.53641 8.47565 3.46186 7.71587L8.82732 3.31089Z" fill="#B9AEB4"/>
+                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M8 17C8 14.7909 9.79086 13 12 13C14.2091 13 16 14.7909 16 17V21H14V17C14 15.8954 13.1046 15 12 15C10.8954 15 10 15.8954 10 17V21H8V17Z" fill="#B9AEB4"/>
+                                        </svg>
+                                        
+                                    ) : (
+
+                                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                      <path fill-rule="evenodd" clip-rule="evenodd" d="M13.9036 4.85668C12.7971 3.94825 11.2029 3.94825 10.0964 4.85668L4.73093 9.26166C4.2682 9.64155 4 10.2088 4 10.8074V18C4 19.1046 4.89543 20 6 20H18C19.1046 20 20 19.1046 20 18V10.8074C20 10.2088 19.7318 9.64155 19.2691 9.26166L13.9036 4.85668ZM8.82732 3.31089C10.6715 1.79685 13.3285 1.79685 15.1727 3.31089L20.5381 7.71587C21.4636 8.47565 22 9.61006 22 10.8074V18C22 20.2091 20.2091 22 18 22H6C3.79086 22 2 20.2091 2 18V10.8074C2 9.61006 2.53641 8.47565 3.46186 7.71587L8.82732 3.31089Z" fill="#666666"/>
+                                      <path fill-rule="evenodd" clip-rule="evenodd" d="M8 17C8 14.7909 9.79086 13 12 13C14.2091 13 16 14.7909 16 17V21H14V17C14 15.8954 13.1046 15 12 15C10.8954 15 10 15.8954 10 17V21H8V17Z" fill="#666666"/>
+                                      </svg>                                            
+                                     
+                                    )}
+                                  </div>
+                                  <div className="text">
+                                    <span>
+                                      {" "}
+                                      {e.bankName}
+                                      {/* {e.bankStation} */}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {
+                                e.bankStation && e.bankStation !=="" &&(
+
+                                  <div className="in-item">
+                                  <div className="image">
+                                    {selectedProfileData &&
+                                    selectedProfileData.profileTheme ==
+                                      "light" ? (
+
+                                        <svg
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <path
+                                          fill-rule="evenodd"
+                                          clip-rule="evenodd"
+                                          d="M12 4C10.4255 4 8.90459 4.65749 7.77501 5.84574C6.6438 7.03572 5.99998 8.66001 5.99998 10.3636C5.99998 12.844 7.5363 15.2652 9.24306 17.1603C10.0789 18.0884 10.9177 18.8486 11.5484 19.3769C11.7154 19.5168 11.8673 19.64 12 19.7453C12.1327 19.64 12.2846 19.5168 12.4516 19.3769C13.0823 18.8486 13.9211 18.0884 14.7569 17.1603C16.4637 15.2652 18 12.844 18 10.3636C18 8.66001 17.3562 7.03572 16.225 5.84574C15.0954 4.65749 13.5745 4 12 4ZM12 21C11.4258 21.8187 11.4256 21.8186 11.4253 21.8184L11.4228 21.8166L11.4172 21.8127L11.3986 21.7994C11.3829 21.7882 11.3607 21.7722 11.3325 21.7517C11.2761 21.7106 11.1956 21.6511 11.0943 21.5741C10.8917 21.4203 10.6057 21.1962 10.2641 20.9101C9.58226 20.3389 8.67109 19.5139 7.75691 18.4988C5.96367 16.5076 3.99998 13.6105 3.99998 10.3636C3.99998 8.16134 4.83117 6.0397 6.32546 4.46777C7.82139 2.89413 9.86144 2 12 2C14.1385 2 16.1786 2.89413 17.6745 4.46777C19.1688 6.0397 20 8.16134 20 10.3636C20 13.6105 18.0363 16.5076 16.2431 18.4988C15.3289 19.5139 14.4177 20.3389 13.7359 20.9101C13.3942 21.1962 13.1082 21.4203 12.9057 21.5741C12.8044 21.6511 12.7238 21.7106 12.6675 21.7517C12.6393 21.7722 12.6171 21.7882 12.6014 21.7994L12.5828 21.8127L12.5772 21.8166L12.5754 21.8179C12.5751 21.8181 12.5742 21.8187 12 21ZM12 21L12.5742 21.8187C12.2295 22.0604 11.7699 22.0601 11.4253 21.8184L12 21Z"
+                                          fill="#c0c0c5"
+                                        />
+                                        <path
+                                          fill-rule="evenodd"
+                                          clip-rule="evenodd"
+                                          d="M12 8C10.8954 8 9.99998 8.89543 9.99998 10C9.99998 11.1046 10.8954 12 12 12C13.1046 12 14 11.1046 14 10C14 8.89543 13.1046 8 12 8ZM7.99998 10C7.99998 7.79086 9.79085 6 12 6C14.2091 6 16 7.79086 16 10C16 12.2091 14.2091 14 12 14C9.79085 14 7.99998 12.2091 7.99998 10Z"
+                                          fill="#c0c0c5"
+                                        />
+                                      </svg>
+
+                                      
+                                    ) : (
+                                      <svg
+                                                                                     width="24"
+                                                                                     height="24"
+                                                                                     viewBox="0 0 24 24"
+                                                                                     fill="none"
+                                                                                     xmlns="http://www.w3.org/2000/svg"
+                                                                                   >
+                                                                                     <path
+                                                                                       fill-rule="evenodd"
+                                                                                       clip-rule="evenodd"
+                                                                                       d="M12 4C10.4255 4 8.90459 4.65749 7.77501 5.84574C6.6438 7.03572 5.99998 8.66001 5.99998 10.3636C5.99998 12.844 7.5363 15.2652 9.24306 17.1603C10.0789 18.0884 10.9177 18.8486 11.5484 19.3769C11.7154 19.5168 11.8673 19.64 12 19.7453C12.1327 19.64 12.2846 19.5168 12.4516 19.3769C13.0823 18.8486 13.9211 18.0884 14.7569 17.1603C16.4637 15.2652 18 12.844 18 10.3636C18 8.66001 17.3562 7.03572 16.225 5.84574C15.0954 4.65749 13.5745 4 12 4ZM12 21C11.4258 21.8187 11.4256 21.8186 11.4253 21.8184L11.4228 21.8166L11.4172 21.8127L11.3986 21.7994C11.3829 21.7882 11.3607 21.7722 11.3325 21.7517C11.2761 21.7106 11.1956 21.6511 11.0943 21.5741C10.8917 21.4203 10.6057 21.1962 10.2641 20.9101C9.58226 20.3389 8.67109 19.5139 7.75691 18.4988C5.96367 16.5076 3.99998 13.6105 3.99998 10.3636C3.99998 8.16134 4.83117 6.0397 6.32546 4.46777C7.82139 2.89413 9.86144 2 12 2C14.1385 2 16.1786 2.89413 17.6745 4.46777C19.1688 6.0397 20 8.16134 20 10.3636C20 13.6105 18.0363 16.5076 16.2431 18.4988C15.3289 19.5139 14.4177 20.3389 13.7359 20.9101C13.3942 21.1962 13.1082 21.4203 12.9057 21.5741C12.8044 21.6511 12.7238 21.7106 12.6675 21.7517C12.6393 21.7722 12.6171 21.7882 12.6014 21.7994L12.5828 21.8127L12.5772 21.8166L12.5754 21.8179C12.5751 21.8181 12.5742 21.8187 12 21ZM12 21L12.5742 21.8187C12.2295 22.0604 11.7699 22.0601 11.4253 21.8184L12 21Z"
+                                                                                       fill="#666666"
+                                                                                     />
+                                                                                     <path
+                                                                                       fill-rule="evenodd"
+                                                                                       clip-rule="evenodd"
+                                                                                       d="M12 8C10.8954 8 9.99998 8.89543 9.99998 10C9.99998 11.1046 10.8954 12 12 12C13.1046 12 14 11.1046 14 10C14 8.89543 13.1046 8 12 8ZM7.99998 10C7.99998 7.79086 9.79085 6 12 6C14.2091 6 16 7.79086 16 10C16 12.2091 14.2091 14 12 14C9.79085 14 7.99998 12.2091 7.99998 10Z"
+                                                                                       fill="#666666"
+                                                                                     />
+                                                                                   </svg>
+
+                                    )}
+                                  </div>
+                                  <div className="text">
+                                    <span> {e.bankStation} /  {e.bankSubeKodu}</span>
+                                  </div>
+                                </div>
+
+                                )
+
+                              }
+
+{e.bankAccountNumber &&
+                                e.bankAccountNumber !== "" && (
                                   <div className="in-item">
                                     <div className="image">
                                       {selectedProfileData &&
                                       selectedProfileData.profileTheme ==
                                         "light" ? (
-                                        <img src="/icons/home_4-AEAEB4.svg" />
-                                      ) : (
-                                        <svg
-                                          width="24"
-                                          height="24"
-                                          viewBox="0 0 24 24"
-                                          fill="none"
-                                          xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                          <path
-                                            fill-rule="evenodd"
-                                            clip-rule="evenodd"
-                                            d="M12 4C10.4255 4 8.90459 4.65749 7.77501 5.84574C6.6438 7.03572 5.99998 8.66001 5.99998 10.3636C5.99998 12.844 7.5363 15.2652 9.24306 17.1603C10.0789 18.0884 10.9177 18.8486 11.5484 19.3769C11.7154 19.5168 11.8673 19.64 12 19.7453C12.1327 19.64 12.2846 19.5168 12.4516 19.3769C13.0823 18.8486 13.9211 18.0884 14.7569 17.1603C16.4637 15.2652 18 12.844 18 10.3636C18 8.66001 17.3562 7.03572 16.225 5.84574C15.0954 4.65749 13.5745 4 12 4ZM12 21C11.4258 21.8187 11.4256 21.8186 11.4253 21.8184L11.4228 21.8166L11.4172 21.8127L11.3986 21.7994C11.3829 21.7882 11.3607 21.7722 11.3325 21.7517C11.2761 21.7106 11.1956 21.6511 11.0943 21.5741C10.8917 21.4203 10.6057 21.1962 10.2641 20.9101C9.58226 20.3389 8.67109 19.5139 7.75691 18.4988C5.96367 16.5076 3.99998 13.6105 3.99998 10.3636C3.99998 8.16134 4.83117 6.0397 6.32546 4.46777C7.82139 2.89413 9.86144 2 12 2C14.1385 2 16.1786 2.89413 17.6745 4.46777C19.1688 6.0397 20 8.16134 20 10.3636C20 13.6105 18.0363 16.5076 16.2431 18.4988C15.3289 19.5139 14.4177 20.3389 13.7359 20.9101C13.3942 21.1962 13.1082 21.4203 12.9057 21.5741C12.8044 21.6511 12.7238 21.7106 12.6675 21.7517C12.6393 21.7722 12.6171 21.7882 12.6014 21.7994L12.5828 21.8127L12.5772 21.8166L12.5754 21.8179C12.5751 21.8181 12.5742 21.8187 12 21ZM12 21L12.5742 21.8187C12.2295 22.0604 11.7699 22.0601 11.4253 21.8184L12 21Z"
-                                            fill="#666666"
-                                          />
-                                          <path
-                                            fill-rule="evenodd"
-                                            clip-rule="evenodd"
-                                            d="M12 8C10.8954 8 9.99998 8.89543 9.99998 10C9.99998 11.1046 10.8954 12 12 12C13.1046 12 14 11.1046 14 10C14 8.89543 13.1046 8 12 8ZM7.99998 10C7.99998 7.79086 9.79085 6 12 6C14.2091 6 16 7.79086 16 10C16 12.2091 14.2091 14 12 14C9.79085 14 7.99998 12.2091 7.99998 10Z"
-                                            fill="#666666"
-                                          />
-                                        </svg>
-                                      )}
-                                    </div>
-                                    <div className="text">
-                                      <span>
-                                        {" "}
-                                        {e.bankName} {e.bankStation}
-                                      </span>
-                                    </div>
-                                  </div>
-                                )}
-
-                                {e.bankIban && e.bankIban !== "" && (
-                                  <div className="in-item">
-                                    <div className="image">
-                                      {selectedProfileData &&
-                                      selectedProfileData.profileTheme ==
-                                        "light" ? (
-                                        <img src="/icons/Wallet-AEAEB4.svg" />
-                                      ) : (
-                                        <svg
-                                          width="24"
-                                          height="24"
-                                          viewBox="0 0 24 24"
-                                          fill="none"
-                                          xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                          <path
-                                            fill-rule="evenodd"
-                                            clip-rule="evenodd"
-                                            d="M2 7C2 4.23858 4.23858 2 7 2H17C19.7614 2 22 4.23858 22 7V17C22 19.7614 19.7614 22 17 22H7C4.23858 22 2 19.7614 2 17V7ZM7 4C5.34315 4 4 5.34315 4 7V17C4 18.6569 5.34315 20 7 20H17C18.6569 20 20 18.6569 20 17V7C20 5.34315 18.6569 4 17 4H7Z"
-                                            fill="#666666"
-                                          />
-                                          <path
-                                            fill-rule="evenodd"
-                                            clip-rule="evenodd"
-                                            d="M11 12C11 9.79086 12.7909 8 15 8H20C21.1046 8 22 8.89543 22 10V14C22 15.1046 21.1046 16 20 16H15C12.7909 16 11 14.2091 11 12ZM15 10C13.8954 10 13 10.8954 13 12C13 13.1046 13.8954 14 15 14H20V10H15Z"
-                                            fill="#666666"
-                                          />
-                                          <path
-                                            fill-rule="evenodd"
-                                            clip-rule="evenodd"
-                                            d="M14 12C14 11.4477 14.4477 11 15 11L15.1 11C15.6523 11 16.1 11.4477 16.1 12C16.1 12.5523 15.6523 13 15.1 13L15 13C14.4477 13 14 12.5523 14 12Z"
-                                            fill="#666666"
-                                          />
-                                        </svg>
-                                      )}
-                                    </div>
-                                    <div className="text">
-                                      <span> {e.bankIban}</span>
-                                    </div>
-                                  </div>
-                                )}
-
-                                {e.bankAccountNumber &&
-                                  e.bankAccountNumber !== "" && (
-                                    <div className="in-item">
-                                      <div className="image">
-                                        {selectedProfileData &&
-                                        selectedProfileData.profileTheme ==
-                                          "light" ? (
-                                          <img src="/icons/Wallet-AEAEB4.svg" />
-                                        ) : (
                                           <svg
-                                            width="24"
-                                            height="24"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                          >
-                                            <path
-                                              fill-rule="evenodd"
-                                              clip-rule="evenodd"
-                                              d="M2 8C2 5.79086 3.79086 4 6 4H18C20.2091 4 22 5.79086 22 8V8.5C22 8.77614 21.7761 9 21.5 9L2.5 9C2.22386 9 2 8.77614 2 8.5V8ZM2.5 11C2.22386 11 2 11.2239 2 11.5V16C2 18.2091 3.79086 20 6 20H18C20.2091 20 22 18.2091 22 16V11.5C22 11.2239 21.7761 11 21.5 11L2.5 11ZM13 15C13 14.4477 13.4477 14 14 14H17C17.5523 14 18 14.4477 18 15C18 15.5523 17.5523 16 17 16H14C13.4477 16 13 15.5523 13 15Z"
-                                              fill="#666666"
-                                            />
-                                          </svg>
-                                        )}
-                                      </div>
-                                      <div className="text">
-                                        <span> {e.bankAccountNumber}</span>
-                                      </div>
+                                          width="24"
+                                          height="24"
+                                          viewBox="0 0 24 24"
+                                          fill="#c0c0c5"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <path
+                                            fill-rule="evenodd"
+                                            clip-rule="evenodd"
+                                            d="M2 8C2 5.79086 3.79086 4 6 4H18C20.2091 4 22 5.79086 22 8V8.5C22 8.77614 21.7761 9 21.5 9L2.5 9C2.22386 9 2 8.77614 2 8.5V8ZM2.5 11C2.22386 11 2 11.2239 2 11.5V16C2 18.2091 3.79086 20 6 20H18C20.2091 20 22 18.2091 22 16V11.5C22 11.2239 21.7761 11 21.5 11L2.5 11ZM13 15C13 14.4477 13.4477 14 14 14H17C17.5523 14 18 14.4477 18 15C18 15.5523 17.5523 16 17 16H14C13.4477 16 13 15.5523 13 15Z"
+                                            fill="#c0c0c5"
+                                          />
+                                        </svg>
+                                      ) : (
+                                        <svg
+                                          width="24"
+                                          height="24"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <path
+                                            fill-rule="evenodd"
+                                            clip-rule="evenodd"
+                                            d="M2 8C2 5.79086 3.79086 4 6 4H18C20.2091 4 22 5.79086 22 8V8.5C22 8.77614 21.7761 9 21.5 9L2.5 9C2.22386 9 2 8.77614 2 8.5V8ZM2.5 11C2.22386 11 2 11.2239 2 11.5V16C2 18.2091 3.79086 20 6 20H18C20.2091 20 22 18.2091 22 16V11.5C22 11.2239 21.7761 11 21.5 11L2.5 11ZM13 15C13 14.4477 13.4477 14 14 14H17C17.5523 14 18 14.4477 18 15C18 15.5523 17.5523 16 17 16H14C13.4477 16 13 15.5523 13 15Z"
+                                            fill="#666666"
+                                          />
+                                        </svg>
+                                      )}
                                     </div>
-                                  )}
-
-                                {isIbanEmpty && (
-                                  <a
-                                    onClick={() => {
-                                      
-                                        navigator.clipboard.writeText(
-                                          e.bankIban
-                                        );
-                                      
-                                    }}
-                                    className={
-                                      "global-button " +
-                                      (selectedProfileData &&
-                                      selectedProfileData.profileTheme ==
-                                        "light"
-                                        ? "profile-in-button"
-                                        : "profile-in-button-dark")
-                                    }
-                                  >
-                                    <span>IBAN'ı Kopyala</span>
-                                  </a>
+                                    <div className="text">
+                                      <span> {e.bankAccountNumber}</span>
+                                    </div>
+                                  </div>
                                 )}
-                              </>
+
+
+                              {e.bankIban && e.bankIban !== "" && (
+                                <div className="in-item">
+                                  <div className="image">
+                                    {selectedProfileData &&
+                                    selectedProfileData.profileTheme ==
+                                      "light" ? (
+                                      <img src="/icons/Wallet-AEAEB4.svg" />
+                                    ) : (
+                                      <svg
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <path
+                                          fill-rule="evenodd"
+                                          clip-rule="evenodd"
+                                          d="M2 7C2 4.23858 4.23858 2 7 2H17C19.7614 2 22 4.23858 22 7V17C22 19.7614 19.7614 22 17 22H7C4.23858 22 2 19.7614 2 17V7ZM7 4C5.34315 4 4 5.34315 4 7V17C4 18.6569 5.34315 20 7 20H17C18.6569 20 20 18.6569 20 17V7C20 5.34315 18.6569 4 17 4H7Z"
+                                          fill="#666666"
+                                        />
+                                        <path
+                                          fill-rule="evenodd"
+                                          clip-rule="evenodd"
+                                          d="M11 12C11 9.79086 12.7909 8 15 8H20C21.1046 8 22 8.89543 22 10V14C22 15.1046 21.1046 16 20 16H15C12.7909 16 11 14.2091 11 12ZM15 10C13.8954 10 13 10.8954 13 12C13 13.1046 13.8954 14 15 14H20V10H15Z"
+                                          fill="#666666"
+                                        />
+                                        <path
+                                          fill-rule="evenodd"
+                                          clip-rule="evenodd"
+                                          d="M14 12C14 11.4477 14.4477 11 15 11L15.1 11C15.6523 11 16.1 11.4477 16.1 12C16.1 12.5523 15.6523 13 15.1 13L15 13C14.4477 13 14 12.5523 14 12Z"
+                                          fill="#666666"
+                                        />
+                                      </svg>
+                                    )}
+                                  </div>
+                                  <div className="text">
+                                    <span> {e.bankIban}</span>
+                                  </div>
+                                </div>
+                              )}
+
+
+                              {
+                                e.swiftData  && e.swiftData!=="" && (
+
+                                  <div className="in-item">
+                                  <div className="image">
+                                    {selectedProfileData &&
+                                    selectedProfileData.profileTheme ==
+                                      "light" ? (
+
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12Z" fill="#C0C0C5"/>
+                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M10.8274 5.95227C10.3268 7.45402 10 9.59229 10 12C10 14.4077 10.3268 16.546 10.8274 18.0477C11.0794 18.8038 11.3575 19.3436 11.6177 19.6738C11.7455 19.8359 11.8494 19.9225 11.9186 19.9649C11.9515 19.9852 11.9736 19.9935 11.9847 19.9969C11.9948 20 11.999 20 11.9999 20H12C12.0007 20 12.0049 20.0001 12.0153 19.9969C12.0264 19.9935 12.0485 19.9852 12.0814 19.9649C12.1506 19.9225 12.2545 19.8359 12.3823 19.6738C12.6425 19.3436 12.9206 18.8038 13.1726 18.0477C13.6732 16.546 14 14.4077 14 12C14 9.59229 13.6732 7.45402 13.1726 5.95227C12.9206 5.19616 12.6425 4.65642 12.3823 4.32624C12.2545 4.16408 12.1506 4.07752 12.0814 4.03507C12.0485 4.01483 12.0264 4.00645 12.0153 4.00305C12.0052 3.99998 12.001 4 12.0001 4L12 4L11.9999 4C11.999 4 11.9948 3.99998 11.9847 4.00305C11.9736 4.00645 11.9515 4.01483 11.9186 4.03507C11.8494 4.07752 11.7455 4.16408 11.6177 4.32624C11.3575 4.65642 11.0794 5.19616 10.8274 5.95227ZM10.0469 3.08829C10.4956 2.51889 11.1481 2 12 2C12.8519 2 13.5044 2.51889 13.9531 3.08829C14.4108 3.66896 14.7791 4.44724 15.07 5.31981C15.6552 7.07541 16 9.43715 16 12C16 14.5629 15.6552 16.9246 15.07 18.6802C14.7791 19.5528 14.4108 20.331 13.9531 20.9117C13.5044 21.4811 12.8519 22 12 22C11.1481 22 10.4956 21.4811 10.0469 20.9117C9.58923 20.331 9.22085 19.5528 8.93 18.6802C8.3448 16.9246 8 14.5629 8 12C8 9.43715 8.3448 7.07541 8.93 5.31981C9.22085 4.44724 9.58923 3.66896 10.0469 3.08829Z" fill="#C0C0C5"/>
+                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M4 12C4 12.0009 3.99998 12.0052 4.00305 12.0153C4.00645 12.0264 4.01483 12.0485 4.03507 12.0814C4.07752 12.1506 4.16408 12.2545 4.32624 12.3823C4.65642 12.6425 5.19616 12.9206 5.95227 13.1726C7.45402 13.6732 9.59229 14 12 14C14.4077 14 16.546 13.6732 18.0477 13.1726C18.8038 12.9206 19.3436 12.6425 19.6738 12.3823C19.8359 12.2545 19.9225 12.1506 19.9649 12.0814C19.9852 12.0485 19.9935 12.0264 19.9969 12.0153C20 12.0052 20 12.001 20 12.0001C20 11.9992 20 11.9948 19.9969 11.9847C19.9935 11.9736 19.9852 11.9516 19.9649 11.9186C19.9225 11.8494 19.8359 11.7455 19.6738 11.6177C19.3436 11.3575 18.8038 11.0794 18.0477 10.8274C16.546 10.3268 14.4077 10 12 10C9.59229 10 7.45402 10.3268 5.95227 10.8274C5.19616 11.0794 4.65642 11.3575 4.32624 11.6177C4.16408 11.7455 4.07752 11.8494 4.03507 11.9186C4.01483 11.9515 4.00645 11.9736 4.00305 11.9847C3.99998 11.9948 4 11.9991 4 12ZM5.31981 8.93C7.07541 8.3448 9.43715 8 12 8C14.5629 8 16.9246 8.3448 18.6802 8.93C19.5528 9.22085 20.331 9.58923 20.9117 10.0469C21.4811 10.4956 22 11.1481 22 12C22 12.8519 21.4811 13.5044 20.9117 13.9531C20.331 14.4108 19.5528 14.7791 18.6802 15.07C16.9246 15.6552 14.5629 16 12 16C9.43715 16 7.07541 15.6552 5.31981 15.07C4.44724 14.7791 3.66896 14.4108 3.08829 13.9531C2.51889 13.5044 2 12.8519 2 12C2 11.1481 2.51889 10.4956 3.08829 10.0469C3.66896 9.58923 4.44724 9.22085 5.31981 8.93Z" fill="#C0C0C5"/>
+                                        </svg>        
+
+                                        
+                                    ) : (
+                                      <svg width="24" height="24" viewBox="0 0 24 24" fill="#666666" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12Z" fill="#666666"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M10.0854 6.04218C9.43054 7.51558 9 9.62114 9 12C9 14.3789 9.43054 16.4844 10.0854 17.9578C10.4134 18.6958 10.778 19.2311 11.1324 19.5683C11.4816 19.9007 11.7731 20 12 20C12.2269 20 12.5184 19.9007 12.8676 19.5683C13.222 19.2311 13.5866 18.6958 13.9146 17.9578C14.5695 16.4844 15 14.3789 15 12C15 9.62114 14.5695 7.51558 13.9146 6.04218C13.5866 5.30422 13.222 4.76892 12.8676 4.43166C12.5184 4.0993 12.2269 4 12 4C11.7731 4 11.4816 4.0993 11.1324 4.43166C10.778 4.76892 10.4134 5.30422 10.0854 6.04218ZM9.75363 2.98287C10.3615 2.40438 11.1223 2 12 2C12.8777 2 13.6385 2.40438 14.2464 2.98287C14.8491 3.55645 15.3464 4.33918 15.7422 5.2299C16.5351 7.01386 17 9.40829 17 12C17 14.5917 16.5351 16.9861 15.7422 18.7701C15.3464 19.6608 14.8491 20.4435 14.2464 21.0171C13.6385 21.5956 12.8777 22 12 22C11.1223 22 10.3615 21.5956 9.75363 21.0171C9.15092 20.4435 8.65364 19.6608 8.25776 18.7701C7.46489 16.9861 7 14.5917 7 12C7 9.40829 7.46489 7.01386 8.25776 5.2299C8.65364 4.33918 9.15092 3.55645 9.75363 2.98287Z" fill="#666666"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M12.1584 16C8.87071 16 6.0954 16.7732 4.56645 17.8241L3.43359 16.1759C5.41246 14.8158 8.63551 14 12.1584 14C15.4844 14 18.5304 14.7265 20.521 15.9415L19.4791 17.6486C17.8986 16.684 15.2489 16 12.1584 16Z" fill="#666666"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M12.0641 10C8.57865 10 5.38843 9.18347 3.42908 7.82103L4.57087 6.17899C6.07882 7.22754 8.81766 8.00001 12.0641 8.00001C15.2286 8.00001 17.9165 7.26564 19.4485 6.25273L20.5515 7.92105C18.5847 9.22142 15.4682 10 12.0641 10Z" fill="#666666"/>
+</svg>
+
+                                    )}
+                                  </div>
+                                  <div className="text">
+                                    <span> {e.swiftData}  /   {e.bicCode}</span>
+                                  </div>
+                                </div>
+                                  
+                                )
+                              }
+
+                            
+
+                              {isIbanEmpty && (
+                                <a
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(
+                                      e.bankIban
+                                    );
+                                  }}
+                                  className={
+                                    "global-button " +
+                                    (selectedProfileData &&
+                                    selectedProfileData.profileTheme ==
+                                      "light"
+                                      ? "profile-in-button"
+                                      : "profile-in-button-dark")
+                                  }
+                                >
+                                  <span>IBAN'ı Kopyala</span>
+                                </a>
+                              )}
+
+
+                            </>
                             );
                           })}
                       </div>
@@ -3270,10 +3721,11 @@ target="_blank" style={{
                             onClick={() => {
                               {
                                 navigator.clipboard.writeText(
-                                  "Şirket Adı:",v.companyStatus,
-                                  "Vergi Dairesi:", v.taxAdministration,
-                                  "vergi No:",v.taxNumber
-                                  
+
+                                  ` Şirket Adı: ${v.companyStatus},
+                                  Vergi Dairesi: ${v.taxAdministration},
+                                  Vergi No: ${v.taxNumber}
+                                      `
                                   );
                               }
                             }}
@@ -3326,15 +3778,36 @@ target="_blank" style={{
 
           </div>
         )}{" "}
+
+
+{
+  hideLogowe===false && (
+
+    <div className="mini-logo">
+              {selectedProfileData && selectedProfileData.profileTheme == "light" ? (
+                <img src="/images/hibritcard-black-logo.svg" />
+              ) : (
+                <img src="/images/hibritcard-white-logo.svg" />
+              )}
+            </div>
+
+  )
+}
+
+
       {/* logo burada */}
-      <div className="mini-logo">
+
+
+      {/* <div className="mini-logo">
         {" "}
         {selectedProfileData && selectedProfileData.profileTheme == "light" ? (
           <img src="/images/hibritcard-black-logo.svg" />
         ) : (
           <img src="/images/hibritcard-white-logo.svg" />
         )}{" "}
-      </div>{" "}
+      </div>{" "} */}
+
+
       {/* minLogo burada */}
 
       <div className="profile-page-button-global-public"  onClick={(e)=>{e.preventDefault();setallprofilePopup(!allprofilePopup);}}>
@@ -3346,7 +3819,7 @@ target="_blank" style={{
           }}
         >
 
-          {selectedProfileData.profileTag} &nbsp;
+          {selectedProfileData && selectedProfileData.profileTag} &nbsp;
 
           <i class="fa-solid fa-angle-down"></i>
         </a>

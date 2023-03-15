@@ -103,6 +103,7 @@ import { border } from "@mui/system";
 import IBAN from "../../buttonInput/ibanFormat";
 import e from "cors";
 import { UploadFile } from "@mui/icons-material";
+import { TRUE } from "sass";
 
 //Iban Input Changs
 const IbanInput = (props) => (
@@ -131,16 +132,6 @@ const IbanInput = (props) => (
         />{" "}
         {Boolean(iban) && (
           <React.Fragment>
-            {/* <p>
-              <strong> IBAN(unformated) </strong>: <br /> {iban}{" "}
-            </p>{" "}
-            <p>
-              <strong> IBAN(formatted) </strong>: <br /> {value}{" "}
-            </p>{" "} */}
-
-            {/* <div>
-            <strong> IBAN(formatted) </strong>: <br /> {value}{" "}
-            </div> */}
           </React.Fragment>
         )}
       </React.Fragment>
@@ -226,7 +217,9 @@ function Panel() {
   //order of fatura Status
 
   const faturaBillorderStatus = useSelector(
+
     (state) => state.userSlice.orderFaturaStatus
+    
   );
 
   const bankorderstatus = useSelector(
@@ -337,7 +330,7 @@ function Panel() {
   );
   const profile = useSelector((state) => state.userSlice.profiles);
 
-  const selectedProfilData = profile.find(
+  const selectedProfilData = profile && profile.find(
     (s) => s.profileId == selectedProfileId
   );
 
@@ -1055,6 +1048,8 @@ function Panel() {
     // dispatch(updateBankInfoAsync(bankDataDetails1)).then(()=>{
 
     bankFiledAdd.map((v, i) => {
+
+
       for (let index = 0; index <= bankFiledAdd.length; index++) {
 
         dispatch(
@@ -1066,6 +1061,10 @@ function Panel() {
             bankIban: v.bankIban,
             bankAccountNumber: v.bankAccountNumber,
             arrayLentghToChange: i,
+            swiftData: v.swiftData,
+            bicCode: v.bicCode,
+            bankSubeKodu:v.bankSubeKodu
+
           })
         ).then(()=>{
 
@@ -1442,6 +1441,12 @@ function Panel() {
 
 
 
+//  phoneTipi To change
+const [phoneTipiNumber, setphoneTipiNumber]=useState("");
+
+useEffect(() => {
+ console.log("Scoolk",phoneTipiNumber );
+}, [phoneTipiNumber])
 
   //update contact data
   function updateContactData(id, panelPhoneNumbers) {
@@ -1474,15 +1479,17 @@ function Panel() {
                     : false,
                 arrayLentghToChange: i,
                 existPhoneNumber: oldPanelcontactData.length > 0 && oldPanelcontactData[i] ? oldPanelcontactData[i].phoneNumber: "",
-                existDefaultPhone:oldPanelcontactData.length >0 && oldPanelcontactData[i] ? oldPanelcontactData[i].defaultNumber: ""
+                existDefaultPhone:oldPanelcontactData.length >0 && oldPanelcontactData[i] ? oldPanelcontactData[i].defaultNumber: "",
+                eixstphoneTipi: oldPanelcontactData.length >0 && oldPanelcontactData[i] ? oldPanelcontactData[i].phoneTipi: "",
+                phoneTipi: v.phoneTipi
               })
 
             );
           //}
 
          console.log("numarabak:", v.phoneNumber);
-        });
 
+        });
 
       })
       .then(() => {
@@ -1552,7 +1559,8 @@ function Panel() {
     e,
     existPhoneNumberrr,
     existDefaultPhoneee,
-    index
+    index,
+    existphoneTipi
   ) {
     //console.log("eeeee", e);
 
@@ -1561,6 +1569,7 @@ function Panel() {
         conatctDataId: contactDataId,
         existPhoneNumber: existPhoneNumberrr,
         existDefaultPhone: existDefaultPhoneee,
+        existphoneTipi : existphoneTipi
       })
     ).then(() => {
       removeInputPhoneHandle(index);
@@ -1616,7 +1625,10 @@ function Panel() {
     existbankNumber,
     existbankName,
     existbankStation,
-    index
+    index,
+    existswiftData,
+    existbicCode,
+    bankSubeKodu
   ) {
     dispatch(
       deleteBankElementArrayOnlyUpload({
@@ -1626,6 +1638,10 @@ function Panel() {
         existbankNumber: existbankNumber,
         existbankName: existbankName,
         existbankStation: existbankStation,
+        existswiftData: existswiftData,
+        existbicCode : existbicCode,
+        bankSubeKodu : bankSubeKodu,
+
       })
     )
       .then(() => {
@@ -1742,7 +1758,10 @@ function Panel() {
     const indexesOfIndex = indexes.length - 1;
 
     for (let index = 0; index < numberSend; index++) {
+
       setorderIdOfContact(index);
+      console.log("hataNedir", takenPhoneNumberState )
+
       dispatch(
         postContactInfoAsync({
           profileId: localStorage.getItem("selectedProfileId"),
@@ -2156,10 +2175,12 @@ function Panel() {
   // const [panels, setPanels] = useState(profilePanelBank);
 
   const [panels, setPanels] = useState([]);
-
   useEffect(() => {
     profilePanelBank !== null ? setPanels(profilePanelBank) : setPanels([]);
   }, [profilePanelBank]);
+
+
+
 
   // ******************* sıaralama here*************
 
@@ -2185,6 +2206,36 @@ function Panel() {
     OrderId: orderIdOfBank,
   };
 
+
+
+
+  
+
+  const [defaultNumberIndex, setdefaultNumberIndex]= useState(0);
+  useEffect(() => {
+
+    console.log("jdfhdsfjh", defaultNumberIndex)
+  
+  }, [defaultNumberIndex])
+
+  const handleChangeRadio = (event) => {
+
+    console.log("okkOlduSayi", event.target.value)
+
+    setdefaultNumberIndex(event.target.value);
+  };
+
+  // Email radio button change
+  const [defaultEmailInputLabel, setdefaultEmailInputLabel]= useState(0);
+
+  const handleChangeRadioEmail = (event) => {
+
+    console.log("okkOlduEmail", event.target.value)
+
+    setdefaultEmailInputLabel(event.target.value);
+  };
+
+
   //update and changes every time order and bring new PANEL LİST
   useEffect(() => {
 
@@ -2205,6 +2256,28 @@ function Panel() {
       ) {
         setprofileUrlPanel(v.panelUrlLink);
       }
+
+
+      //set the Number of INDEX
+
+      v.panelPhoneNumbers && v.panelPhoneNumbers.map((w,a)=>{
+
+      if(w.defaultNumber===true){
+        setdefaultNumberIndex(a)
+      }
+
+
+      })
+
+      // set defaulrt Email Here
+
+      v.panelEmailPostas && v.panelEmailPostas.map((w,a)=>{
+
+        if(w.defaultEmaill===true){
+          setdefaultEmailInputLabel(a)
+        }
+        })
+
 
       // if(  v.type  ===  "uploadFileDocument"){
 
@@ -2317,7 +2390,22 @@ function Panel() {
       )
     );
   }
+
+  // spreat the comming telInput
+  const [telNumberInfoSort, settelNumberInfoSort]= useState([]);
+
+  useEffect(() => {
+
+
+  }, [telNumberInfoSort])
   
+
+  
+
+  
+
+
+
   //open PANEL FROM HERE
   async function PanelOpen(
     id,
@@ -2364,7 +2452,8 @@ function Panel() {
     officeEmail,
     officePhoneNumber,
     location,
-    profileUrlPanel
+    profileUrlPanel,
+    
   ) {
     setaccountOwner(accountOwner);
     setbankIban(bankIban);
@@ -2383,13 +2472,23 @@ function Panel() {
     setprofileNot(profileNot);
     setprofilePosition(profilePosition);
 
+
     // settakenPhoneNumberState(takenPhoneNumberState)
     // settakenEmailEpostaState(takenEmailEpostaState)
+    // console.log("JustOnlyThis::", takenPhoneNumberState);
+
+    // console.log("toSetuppFrom::",  ...takenPhoneNumberState.sort((a, b) => a.OrderId - b.OrderId));
+
+    // settelNumberInfoSort(takenPhoneNumberState ? takenPhoneNumberState : []);
+
+    // console.log("sortTobesorted::",  )
+
+
     settelefonInputServ(takenPhoneNumberState ? takenPhoneNumberState : []);
-    setoldPanelcontactData(takenPhoneNumberState ? takenPhoneNumberState : [])
+    setoldPanelcontactData(takenPhoneNumberState ? takenPhoneNumberState : []);
 
     setemailInputServ(takenEmailEpostaState ? takenEmailEpostaState : []);
-    setolPanelEmail(takenEmailEpostaState ? takenEmailEpostaState : [])
+    setolPanelEmail(takenEmailEpostaState ? takenEmailEpostaState : []);
 
     //set bank form heer
     setbankFiledAdd(bankDataList ? bankDataList : []);
@@ -2683,14 +2782,40 @@ function Panel() {
   //upload PDF FİLE FOM HER
 
   const [fileUploadContent, setfileUploadContent] = useState(
-    "Dosya yükle (maks. 5MB)"
+    "Dosya yükle (maks. 2MB)"
   );
 
   useEffect(() => {
     // console.log("changesmake", fileUploadContent);
   }, [fileUploadContent]);
 
-  function handleImageChange(event) {
+
+
+
+
+  function handleImageChange(event, index) {
+
+    console.log("okheryourare::", uploadFileField)
+
+    if(uploadFileField.length > 0){
+      handleUploadFileChangeAftterGuncelle(event,index)
+    }else{
+
+      console.log("hfdjjf",uploadFileField)
+
+      setuploadFileField([
+        ...uploadFileField,
+
+        {
+          belgeDocument: ""
+        },
+      ]);
+
+
+    }
+
+  
+
     const image = event.target.files[0];
 
     if (image.size < 2000000) {
@@ -2721,8 +2846,12 @@ function Panel() {
     // this.props.uploadImage(formData)
   }
 
+  const [ekleUploadFileKontrol, setekleUploadFileKontrol]= useState(false)
+
   // Upload Change from here File
   function handleChangeFileToUpload(e) {
+
+    console.log("uploafilafterget",uploadFileField)
     dispatch(
       fileUploadChangeAsync({
         belgeDocument: uploadFilestatueMode,
@@ -2736,24 +2865,47 @@ function Panel() {
         ) {
           // setuploadFileField(v.belgeDocumentUploads);
 
-          setfileUploadContent("Dosya yükle (maks. 5MB)");
+          setfileUploadContent("Dosya yükle (maks. 2MB)");
+
         }
       });
     }).then(()=>{
 
-      console.log("poas")
+     
+    
+      const list = [...uploadFileField];
+  
+      var o = Object.create(list[uploadFileField.length-1]);
+  
+      Object.defineProperty(o, 'belgeDocument', {
+        value: "boş değil",
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+  
+      list[uploadFileField.length-1] = o;
+  
+      setuploadFileField(list);
 
-    //   setPanels((v) =>
-    //   panelListSort.map((s, i) =>
-    //     s.OrderId === i && s.isOpen === true
-    //         ? { ...s, belgeDocumentUploads: uploadFileField
-    //          }
-    //         : { ...s, belgeDocumentUploads: uploadFileField }
-    //   )
-    // );
+    }).then(()=>{
 
+      setPanels((v) =>
+      panelListSort.map((s, i) =>
+        s.OrderId === i && s.isOpen === true
+            ? { ...s, belgeDocumentUploads: uploadFileField
+             }
+            : { ...s, belgeDocumentUploads: uploadFileField }
+      )
+    );
+
+    }).then(()=>{
+      setekleUploadFileKontrol(true)
     })
   }
+
+
+
 
   function handleEditPicture(e) {
     const fileInput = document.getElementById("imageInput");
@@ -2941,9 +3093,15 @@ function Panel() {
   const [bankFiledAdd, setbankFiledAdd] = useState([]);
 
   const [uploadFileField, setuploadFileField] = useState([]);
+  console.log("uploadFileUp", uploadFileField)
 
+
+  const [uploadfileNull, setuploadfileNull]= useState(false)
   useEffect(() => {
-     console.log("fileThere::", uploadFileField);
+     console.log("filekon::", uploadFileField);
+
+     
+
   }, [uploadFileField]);
 
 
@@ -3008,11 +3166,40 @@ const [ibanChangesi,setibanChangesi]= useState("")
     setbankFiledAdd(list);
   }
 
+  //handle upload after guncelle from here
+
+  function handleUploadFileChangeAftterGuncelle(e, index) {
+
+
+
+    console.log("okkpp", e ,"kfdg", index)
+    
+    const { name, value } = e.target;
+
+    const list = [...uploadFileField];
+
+    var o = Object.create(list[index]);
+
+    Object.defineProperty(o, [name], {
+      value: "boş değil",
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
+
+    list[index] = o;
+
+    console.log("otyru", list)
+
+    setuploadFileField(list);
+
+  }
+
+
   //bankStation heer
 
   function handleBankPanelListBankStation(e, index) {
-    //  console.log("targethbankStation", e.target.value);
-
+    
     const { name, value } = e.target;
 
     const list = [...bankFiledAdd];
@@ -3031,9 +3218,84 @@ const [ibanChangesi,setibanChangesi]= useState("")
     //console.log("emailpart::",list[index][name] )
     list[index] = o;
 
-    
     setbankFiledAdd(list);
   }
+
+  // bank Şube Kodu
+  function handleBankPanelListBankSubeKodu(e, index) {
+    
+    const { name, value } = e.target;
+
+    const list = [...bankFiledAdd];
+
+    console.log("whichLow", list)
+
+    var o = Object.create(list[index]);
+
+    Object.defineProperty(o, [name], {
+      value: value,
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
+
+    //console.log("emailpart::",list[index][name] )
+    list[index] = o;
+    setbankFiledAdd(list);
+
+
+  }
+
+  //bic onChange value
+  function handleBankPanelListBic(e, index) {
+    
+    const { name, value } = e.target;
+
+    const list = [...bankFiledAdd];
+
+    console.log("whichLow", list)
+
+    var o = Object.create(list[index]);
+
+    Object.defineProperty(o, [name], {
+      value: value,
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
+
+    //console.log("emailpart::",list[index][name] )
+    list[index] = o;
+
+    setbankFiledAdd(list);
+  }
+  //swift onchange from here
+
+  function handleBankPanelListSwift(e, index){
+    
+    const { name, value } = e.target;
+
+    const list = [...bankFiledAdd];
+
+
+    var o = Object.create(list[index]);
+
+    Object.defineProperty(o, [name], {
+      value: value,
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
+    //console.log("emailpart::",list[index][name] )
+    list[index] = o;
+    console.log("Statoou", list)
+
+    setbankFiledAdd(list);
+  }
+  
+
+
+
 
 
   function onChange({ value, iban }) {
@@ -3112,7 +3374,7 @@ const [ibanChangesi,setibanChangesi]= useState("")
     setuploadFileField([
       ...uploadFileField,
       {
-        belgeDocument: "",
+        belgeDocument: ""
       },
     ]);
   }
@@ -3122,6 +3384,22 @@ const [ibanChangesi,setibanChangesi]= useState("")
     const uploadList = [...uploadFileField];
     uploadList.splice(index, 1);
     setuploadFileField(uploadList);
+
+
+
+    setPanels((v) =>
+    panelListSort.map((s, i) =>
+
+    s.OrderId === i && s.isOpen === true
+    ? { ...s, belgeDocumentUploads: uploadFileField
+     }
+    : { ...s, belgeDocumentUploads: uploadFileField }
+    
+    )
+    
+  );
+
+
   }
 
   //add Bank Info from here
@@ -3159,17 +3437,31 @@ const [ibanChangesi,setibanChangesi]= useState("")
 
   }
 
-  const [defaultNumberIndex, setdefaultNumberIndex]= useState(0)
+
+
+
   //Multiply Input of Phone
   const [telefonInputServ, settelefonInputServ] = useState([]);
 
+  const isLargeNumber = (element) => element === true;
+
+  // telefonInputServ.length >0 && telefonInputServ.findIndex(isLargeNumber)
+
+
+
   useEffect(() => {
+
     console.log("telsevHere::", telefonInputServ);
+
+
     if(telefonInputServ.length>0){
       telefonInputServ.map((v,i)=>{
 
         if(v.defaultNumber===true){
-          setdefaultNumberIndex(i)
+          // setdefaultNumberIndex(i);
+         // setradioButtonIndexPhone(i);
+          console.log("hjhdshfj",  radioButtonIndexPhone );
+          
         }
 
       })
@@ -3178,7 +3470,9 @@ const [ibanChangesi,setibanChangesi]= useState("")
 
   //add phoneNumber Input
   function addPhoneInputHandle() {
-    settelefonInputServ([...telefonInputServ, { phoneNumber: "" }]);
+
+    settelefonInputServ([...telefonInputServ, { phoneNumber: "", phoneTipi:"EV", defaultNumber:true }]);
+
   }
 
   function removeInputPhoneHandle(index) {
@@ -3296,29 +3590,18 @@ const [ibanChangesi,setibanChangesi]= useState("")
   }
 
 
-  const [defaultEmailInputLabel, setdefaultEmailInputLabel]= useState(0)
   //multiply Input Of Email
   const [emailInputServ, setemailInputServ] = useState([]);
 
   useEffect(() => {
+
      console.log("EmailSev::", emailInputServ);
-
-    if(emailInputServ.length>0){
-      emailInputServ.map((v,i)=>{
-
-        if(v.defaultEmaill===true){
-          setdefaultEmailInputLabel(i)
-        }
-
-      })
-    }
-
 
   }, [emailInputServ]);
 
   //add Email Input from here
   function addEmailInputHandle() {
-    setemailInputServ([...emailInputServ, { emailPosta: "" }]);
+    setemailInputServ([...emailInputServ, { emailPosta: "", defaultEmaill:true }]);
   }
 
   function removeInputEmailHandle(index) {
@@ -3348,13 +3631,40 @@ const [ibanChangesi,setibanChangesi]= useState("")
 
     var o = Object.create(list[index]);
 
+    Object.defineProperties(o, {
+      
+      phoneTipi :{
+        value: list[index].phoneTipi,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      },
 
-    Object.defineProperty(o, "phoneNumber", {
-      value: e,
-      writable: true,
-      enumerable: true,
-      configurable: true,
+      defaultNumber :{
+        value: list[index].defaultNumber,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      },
+      phoneNumber:{
+        value: e,
+        writable: true,
+        enumerable: true,
+        configurable: true
+      }
+      
+
     });
+
+
+    // Object.defineProperty(o, "phoneNumber", {
+    //   value: e,
+    //   writable: true,
+    //   enumerable: true,
+    //   configurable: true,
+    // });
+
+
     list[index] = o;
       console.log("ooogg", o)
     //  console.log("Listlar",)
@@ -3362,8 +3672,71 @@ const [ibanChangesi,setibanChangesi]= useState("")
     settelefonInputServ(list);
   }
 
+  // GET the phone Tipi
+
+  function handlePhoneTipi(e, index) {
+
+    console.log("hfdjglk", e)
+
+
+    const { name, value } = e.target;
+    
+    let list = [...telefonInputServ];
+
+    var o = Object.create(list[index]);
+   
+
+    console.log("beforEnty",o)
+
+
+    Object.defineProperties(o, {
+      
+      phoneTipi :{
+        value: e.target.value,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      },
+
+      defaultNumber :{
+        value: list[index].defaultNumber,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      },
+      phoneNumber:{
+        value: list[index].phoneNumber,
+        writable: true,
+        enumerable: true,
+        configurable: true
+      }
+      
+
+    });
+
+    //const returnedTarget = Object.assign( list[index], o);
+
+    list[index] = o;
+    //console.log("okkheyu", returnedTarget)
+
+    console.log("buneeYuue..", list);
+
+      console.log("tiplist", list);
+    //  console.log("Listlar",)
+
+    settelefonInputServ(list);
+
+  }
+
+
+
+
   //Email handle Changes from heer
   function handleEmailList(e, index) {
+
+    console.log("hjdfhrt", e)
+
+
     const { name, value } = e.target;
     const list = [...emailInputServ];
 
@@ -3414,8 +3787,11 @@ const [ibanChangesi,setibanChangesi]= useState("")
   const [radioButtonIndexPhone, setradioButtonIndexPhone] = useState(0);
   const [radioButtonIndexEmail, setradioButtonIndexEmail] = useState(0);
 
+
+
+
   useEffect(() => {
-    // console.log("phoneRadioo::", radionButtonValuePhone);
+    console.log("phoneRadioo::", radionButtonValuePhone);
   }, [radionButtonValuePhone]);
 
   useEffect(() => {
@@ -5256,8 +5632,8 @@ position:"absolute"
                                       value.officePhoneNumber,
                                       value.location,
 
-                                      value.profileUrlPanel
-
+                                      value.profileUrlPanel,
+                                  
                                     )
                                   }
                                   style={{ cursor: "pointer" }}
@@ -5777,7 +6153,8 @@ position:"absolute"
 <FormControl style={{width:"100%"}}>
       <RadioGroup
         aria-labelledby="demo-radio-buttons-group-label"
-        defaultValue={defaultNumberIndex}
+        value={defaultNumberIndex}
+        onChange={(e)=>handleChangeRadio(e)}
         name="radio-buttons-group"
       >
 
@@ -5823,7 +6200,8 @@ position:"absolute"
                                                 e,
                                                 singleTelefonInput.phoneNumber,
                                                 singleTelefonInput.defaultNumber,
-                                                index
+                                                index,
+                                                singleTelefonInput.phoneTipi
                                               );
                                             }}
                                           >
@@ -5884,16 +6262,17 @@ position:"absolute"
         </InputLabel> */}
 
         <NativeSelect
-          defaultValue={30}
+          defaultValue={singleTelefonInput.phoneTipi}
           inputProps={{
-            name: 'tipi',
+            name: 'phoneTipi',
             id: 'uncontrolled-native',
           }}
           style={{fontSize:"10px",height:"auto"}}
+          onChange={(e)=> handlePhoneTipi(e , index)}
         >
-          <option value={10}>İŞ</option>
-          <option value={20}>EV</option>
-          <option value={30}>CEP</option>
+          <option value="İŞ">İŞ</option>
+          <option value="EV">EV</option>
+          <option value="CEP">CEP</option>
         </NativeSelect>
 
 
@@ -5906,11 +6285,14 @@ position:"absolute"
     
 
 {/* {telefonInputServ.length > 1 &&  radio Button ( */ } 
+{/* value={index}  */}
 
 <FormControlLabel value={index} control={<Radio />}  onClick={() =>{
+
                                                   getRadioButtonIndexPhone(
                                                     index
                                                   );
+
                                                   setradioButtonIndexPhone(index)
 
                                                 }} style={{marginRight:"0px", marginLeft:"0px"}}  />
@@ -5971,7 +6353,7 @@ position:"absolute"
                                                 marginTop: "auto",
                                                 marginBottom: "auto",
                                               }}
-                                              onClick={updateContactOnlyfrom}
+                                              // onClick={updateContactOnlyfrom}
                                             >
                                               &nbsp;
                                               <span
@@ -5980,7 +6362,7 @@ position:"absolute"
                                                     "1px solid #8B8DFF ",
                                                 }}
                                               >
-                                                Yeni tel Ekle
+                                                Yeni Telefon Ekle
                                               </span>
                                             </div>
                                           </div>
@@ -6006,7 +6388,7 @@ position:"absolute"
                                               display: "flex",
                                               cursor: "pointer",
                                             }}
-                                            // onClick={addPhoneInputHandle}
+                                            onClick={addPhoneInputHandle}
                                           >
                                             <div>
                                               <svg
@@ -6044,7 +6426,7 @@ position:"absolute"
                                                     "1px solid #8B8DFF ",
                                                 }}
                                               >
-                                                Numara Ele
+                                                Telefonu Numarası Ekle
                                               </span>
                                             </div>
                                           </div>
@@ -6073,7 +6455,8 @@ position:"absolute"
 <FormControl style={{width:"100%"}}>
       <RadioGroup
         aria-labelledby="demo-radio-buttons-group-label"
-        defaultValue={defaultEmailInputLabel}
+        value={defaultEmailInputLabel}
+        onChange={(e)=> handleChangeRadioEmail(e)}
         name="radio-buttons-group"
       >
         
@@ -6216,7 +6599,7 @@ position:"absolute"
                                                     "1px solid #8B8DFF ",
                                                 }}
                                               >
-                                                Yeni Email Ekle
+                                                Yeni e-Posta Ekle
                                               </span>
                                             </div>
                                           </div>
@@ -6366,9 +6749,11 @@ position:"absolute"
                                     <button
                                       className="global-button content-buttons-item primary-button"
                                       onClick={()=>{
+                                        
                                         contactDataId != undefined
                                           ? updateContactData(value.OrderId, value.panelPhoneNumbers)
                                           : postContactData()
+
                                       }}
                                     >
                                       {contactDataId != undefined
@@ -6569,7 +6954,10 @@ position:"absolute"
                                                   singleBankField.bankAccountNumber,
                                                   singleBankField.bankName,
                                                   singleBankField.bankStation,
-                                                  index
+                                                  index,
+                                                  singleBankField.swiftData,
+                                                  singleBankField.bicCode,
+                                                  singleBankField.bankSubeKodu
                                                 )
                                               }
                                             >
@@ -6597,6 +6985,8 @@ position:"absolute"
                                             </svg>
                                           </div>
 
+
+{/* account Owner from heer */}
                                           <div className="panel-input">
                                             <input
                                               id="grid-first-name"
@@ -6609,19 +6999,17 @@ position:"absolute"
                                               onChange={(e) =>
                                                 handleBankPanelList(e, index)
                                               }
-
-                                              
-
-                                              // setaccountOwner(e.target.value)
                                             />
                                           </div>
 
-                                          <div className="two-input-area">
+                                          {/* banka Adı from here */}
+
+                                          <div className="panel-input">
                                             <input
                                               id="grid-first-name"
                                               type="text"
                                               name="bankName"
-                                              placeholder="Banka"
+                                              placeholder="Banka Adı"
                                               value={singleBankField.bankName}
                                               onChange={(e) =>
                                                 handleBankPanelListBankName(
@@ -6629,11 +7017,15 @@ position:"absolute"
                                                   index
                                                 )
                                               }
-                                              //setbankName(e.target.value)
-                                            />{" "}
-                                            <div className="input-space"> </div>{" "}
+                                             
+                                            />
+                                          </div>
+
+                                          {/* Şube & şube Aı */}
+
+                                          <div className="two-input-area">
                                             <input
-                                              id="grid-last-name"
+                                              id="grid-first-name"
                                               type="text"
                                               name="bankStation"
                                               placeholder="Şube"
@@ -6646,42 +7038,28 @@ position:"absolute"
                                                   index
                                                 )
                                               }
-                                              //setbankStation(e.target.value)
+                                              //setbankName(e.target.value)
                                             />
-                                          </div>
-
-                                          <div className="panel-input">
-                                            {/* <input
-                                      id="grid-first-name"
-                                      type="text"
-                                      placeholder="Iban"
-                                      value={bankIban}
-                                      onChange={(e) =>
-                                        setbankIban(e.target.value)
-                                      }
-                                    /> */}
-
-                                            <IbanInput
-                                              onChange={onChange}
-                                              vValue={singleBankField.bankIban}
-
-                                              onChangeTwo={(e)=>{
-
-                                                handleBankPanelListBankIban(e,index)
-                                                
-                                              }}
-                                              indexTbwo={index}
-
-                                              bankIbanFormat={
-
-                                                 bankIban==="" ? singleBankField.bankIban : bankFiledAdd.length -1 === index  ? bankIban : singleBankField.bankIban
-                                               
+                                            <div className="input-space"> </div>
+                                            <input
+                                              id="grid-last-name"
+                                              type="text"
+                                              name="bankSubeKodu"
+                                              placeholder="Şube Kodu"
+                                              value={singleBankField.bankSubeKodu}
+                                              onChange={(e) =>
+                                                handleBankPanelListBankSubeKodu(
+                                                  e,
+                                                  index
+                                                )
                                               }
+                                              
                                             />
                                           </div>
 
-                                          {/* here will be the account Number */}
-                                          <div className="panel-input">
+
+                                           {/* here will be the account Number */}
+                                           <div className="panel-input">
                                             <AccountNumberInput
                                               onChange={onChangeBankAccount}
                                               onChangetWO={
@@ -6703,6 +7081,63 @@ position:"absolute"
 
                                           {/* account Number end Here */}
 
+                                          <div className="panel-input">
+                                            
+                                            <IbanInput
+                                              onChange={onChange}
+                                              vValue={singleBankField.bankIban}
+
+                                              onChangeTwo={(e)=>{
+
+                                                handleBankPanelListBankIban(e,index)
+                                                
+                                              }}
+                                              indexTbwo={index}
+
+                                              bankIbanFormat={
+
+                                                 bankIban==="" ? singleBankField.bankIban : bankFiledAdd.length -1 === index  ? bankIban : singleBankField.bankIban
+                                               
+                                              }
+                                            />
+                                          </div>
+
+                                          {/* swift && bic from here */}
+
+                                          <div className="two-input-area">
+                                            <input
+                                              id="grid-first-name"
+                                              type="text"
+                                              name="swiftData"
+                                              placeholder="Swift"
+                                              value={singleBankField.swiftData}
+                                              onChange={(e) =>
+                                                handleBankPanelListSwift(
+                                                  e,
+                                                  index
+                                                )
+                                              }
+
+                                              //setbankName(e.target.value);
+
+                                            />{" "}
+                                            <div className="input-space"> </div>
+                                            <input
+                                              id="grid-last-name"
+                                              type="text"
+                                              name="bicCode"
+                                              placeholder="Bic"
+                                              value={singleBankField.bicCode}
+                                              onChange={(e) =>
+                                                handleBankPanelListBic(
+                                                  e,
+                                                  index
+                                                )
+                                              }
+                                              
+                                            />
+                                          </div>
+
                                           <div> </div>
                                           <div className="panel-input">
                                             <button
@@ -6715,7 +7150,7 @@ position:"absolute"
                                             >
                                               {BankDataId != undefined
                                                 ? "Güncelle"
-                                                : "Kaydet"}{" "}
+                                                : "Kaydet"}
                                             </button>{" "}
                                           </div>
                                         </div>
@@ -7146,7 +7581,89 @@ position:"absolute"
 
                               <div className="panel-inner-content">
                                 <div className="panel-inner-content-info">
-                                  {uploadFileField.map(
+
+
+                                {
+
+uploadFileField.length === 0 &&(
+
+  <div
+                                              className="panel-input"
+                                              style={{
+                                                justifyContent: "center",
+                                                marginTop: "10px",
+                                                cursor: "pointer",
+                                                width: "100%",
+                                              }}
+                                              
+                                              onClick={(e) =>
+                                                handleEditPicture(e)
+                                              }
+                                            >
+                                              <button
+                                                className="global-button content-buttons-item primary-button"
+                                                style={{
+                                                  background: "#8B8DFF",
+                                                  borderRadius: "10px",
+                                                }}
+                                              >
+                                                <div
+                                                  style={{
+                                                    display: "flex",
+                                                    justifyContent: "center",
+                                                  }}
+                                                >
+                                                  <div>
+                                                    <svg
+                                                      width="17"
+                                                      height="17"
+                                                      viewBox="0 0 17 17"
+                                                      fill="none"
+                                                      xmlns="http://www.w3.org/2000/svg"
+                                                    >
+                                                      <path
+                                                        fill-rule="evenodd"
+                                                        clip-rule="evenodd"
+                                                        d="M1.41666 8.50002C1.41666 4.588 4.58797 1.41669 8.49999 1.41669C12.412 1.41669 15.5833 4.588 15.5833 8.50002C15.5833 12.412 12.412 15.5834 8.49999 15.5834C4.58797 15.5834 1.41666 12.412 1.41666 8.50002ZM8.49999 2.83335C5.37038 2.83335 2.83332 5.37041 2.83332 8.50002C2.83332 11.6296 5.37038 14.1667 8.49999 14.1667C11.6296 14.1667 14.1667 11.6296 14.1667 8.50002C14.1667 5.37041 11.6296 2.83335 8.49999 2.83335Z"
+                                                        fill="white"
+                                                      />
+                                                      <path
+                                                        fill-rule="evenodd"
+                                                        clip-rule="evenodd"
+                                                        d="M8.50001 4.95831C8.89121 4.95831 9.20834 5.27544 9.20834 5.66665V7.79165H11.3333C11.7245 7.79165 12.0417 8.10878 12.0417 8.49998C12.0417 8.89118 11.7245 9.20831 11.3333 9.20831H9.20834V11.3333C9.20834 11.7245 8.89121 12.0416 8.50001 12.0416C8.10881 12.0416 7.79168 11.7245 7.79168 11.3333V9.20831H5.66668C5.27548 9.20831 4.95834 8.89118 4.95834 8.49998C4.95834 8.10878 5.27548 7.79165 5.66668 7.79165H7.79168V5.66665C7.79168 5.27544 8.10881 4.95831 8.50001 4.95831Z"
+                                                        fill="white"
+                                                      />
+                                                    </svg>
+                                                  </div>
+                                                  &nbsp;&nbsp;
+                                                  <div
+                                                    style={{ marginTop: "3px" }}
+                                                  >
+                                                    {fileUploadContent}
+                                                  </div>
+                                                </div>
+                                              </button>
+
+                                              <div style={{ display: "none" }}>
+                                            <input
+                                              type="file"
+                                              id="imageInput"
+                                              hidden="hidden"
+                                              onChange={(e) => {
+                                                
+                                                handleImageChange(e);
+
+                                              }}
+                                            />
+                                          </div>
+                                            </div>
+
+)
+
+}
+
+          {uploadFileField.map(
+
                                     (singleUploadFile, index) => (
                                       <div>
                                         <div
@@ -7155,8 +7672,12 @@ position:"absolute"
                                             width: "100% !important",
                                           }}
                                         >
-                                          {singleUploadFile.belgeDocument ? (
-                                            <div
+
+
+                                          {
+                                            singleUploadFile.belgeDocument !== "" && (
+
+<div
                                               className="panel-input"
                                               style={{
                                                 justifyContent: "center",
@@ -7213,86 +7734,91 @@ position:"absolute"
                                                 </div>
                                               </button>
                                             </div>
-                                          ) : uploadFileField.length > 1 &&
-                                            singleUploadFile.fileIndex === 0 ? (
-                                            <div
-                                              style={{
-                                                display: "none",
-                                              }}
-                                            ></div>
-                                          ) : (
-                                            <div
-                                              className="panel-input"
-                                              style={{
-                                                justifyContent: "center",
-                                                marginTop: "10px",
-                                                cursor: "pointer",
-                                                width: "100%",
-                                              }}
-                                              // onClick={
-                                              //   belgeDocumentId != undefined
-                                              //     ? uploadChangeFiles
-                                              //     : handleUploadFile
-                                              // }
-                                              onClick={(e) =>
-                                                handleEditPicture(e)
-                                              }
-                                            >
-                                              <button
-                                                className="global-button content-buttons-item primary-button"
-                                                style={{
-                                                  background: "#8B8DFF",
-                                                  borderRadius: "10px",
-                                                }}
-                                              >
-                                                <div
-                                                  style={{
-                                                    display: "flex",
-                                                    justifyContent: "center",
-                                                  }}
-                                                >
-                                                  <div>
-                                                    <svg
-                                                      width="17"
-                                                      height="17"
-                                                      viewBox="0 0 17 17"
-                                                      fill="none"
-                                                      xmlns="http://www.w3.org/2000/svg"
-                                                    >
-                                                      <path
-                                                        fill-rule="evenodd"
-                                                        clip-rule="evenodd"
-                                                        d="M1.41666 8.50002C1.41666 4.588 4.58797 1.41669 8.49999 1.41669C12.412 1.41669 15.5833 4.588 15.5833 8.50002C15.5833 12.412 12.412 15.5834 8.49999 15.5834C4.58797 15.5834 1.41666 12.412 1.41666 8.50002ZM8.49999 2.83335C5.37038 2.83335 2.83332 5.37041 2.83332 8.50002C2.83332 11.6296 5.37038 14.1667 8.49999 14.1667C11.6296 14.1667 14.1667 11.6296 14.1667 8.50002C14.1667 5.37041 11.6296 2.83335 8.49999 2.83335Z"
-                                                        fill="white"
-                                                      />
-                                                      <path
-                                                        fill-rule="evenodd"
-                                                        clip-rule="evenodd"
-                                                        d="M8.50001 4.95831C8.89121 4.95831 9.20834 5.27544 9.20834 5.66665V7.79165H11.3333C11.7245 7.79165 12.0417 8.10878 12.0417 8.49998C12.0417 8.89118 11.7245 9.20831 11.3333 9.20831H9.20834V11.3333C9.20834 11.7245 8.89121 12.0416 8.50001 12.0416C8.10881 12.0416 7.79168 11.7245 7.79168 11.3333V9.20831H5.66668C5.27548 9.20831 4.95834 8.89118 4.95834 8.49998C4.95834 8.10878 5.27548 7.79165 5.66668 7.79165H7.79168V5.66665C7.79168 5.27544 8.10881 4.95831 8.50001 4.95831Z"
-                                                        fill="white"
-                                                      />
-                                                    </svg>
-                                                  </div>
-                                                  &nbsp;&nbsp;
-                                                  <div
-                                                    style={{ marginTop: "3px" }}
-                                                  >
-                                                    {fileUploadContent}
-                                                  </div>
-                                                </div>
-                                              </button>
-                                            </div>
-                                          )}
 
-                                          {uploadFileField.length > 0 &&
-                                          singleUploadFile.fileIndex === 0 ? (
-                                            <div
-                                              style={{
-                                                display: "none",
-                                              }}
-                                            ></div>
-                                          ) : (
-                                            <div
+
+                                            )
+
+
+                                          }
+
+
+
+
+
+
+
+                                            {
+
+singleUploadFile.belgeDocument ==="" && (
+
+  <div
+  className="panel-input"
+  style={{
+    justifyContent: "center",
+    marginTop: "10px",
+    cursor: "pointer",
+    width: "100%",
+  }}
+  onClick={(e) =>
+    handleEditPicture(e)
+  }
+>
+  <button
+    className="global-button content-buttons-item primary-button"
+    style={{
+      background: "#8B8DFF",
+      borderRadius: "10px",
+    }}
+  >
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+      }}
+    >
+      <div>
+        <svg
+          width="17"
+          height="17"
+          viewBox="0 0 17 17"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M1.41666 8.50002C1.41666 4.588 4.58797 1.41669 8.49999 1.41669C12.412 1.41669 15.5833 4.588 15.5833 8.50002C15.5833 12.412 12.412 15.5834 8.49999 15.5834C4.58797 15.5834 1.41666 12.412 1.41666 8.50002ZM8.49999 2.83335C5.37038 2.83335 2.83332 5.37041 2.83332 8.50002C2.83332 11.6296 5.37038 14.1667 8.49999 14.1667C11.6296 14.1667 14.1667 11.6296 14.1667 8.50002C14.1667 5.37041 11.6296 2.83335 8.49999 2.83335Z"
+            fill="white"
+          />
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M8.50001 4.95831C8.89121 4.95831 9.20834 5.27544 9.20834 5.66665V7.79165H11.3333C11.7245 7.79165 12.0417 8.10878 12.0417 8.49998C12.0417 8.89118 11.7245 9.20831 11.3333 9.20831H9.20834V11.3333C9.20834 11.7245 8.89121 12.0416 8.50001 12.0416C8.10881 12.0416 7.79168 11.7245 7.79168 11.3333V9.20831H5.66668C5.27548 9.20831 4.95834 8.89118 4.95834 8.49998C4.95834 8.10878 5.27548 7.79165 5.66668 7.79165H7.79168V5.66665C7.79168 5.27544 8.10881 4.95831 8.50001 4.95831Z"
+            fill="white"
+          />
+        </svg>
+      </div>
+      &nbsp;&nbsp;
+      <div
+        style={{ marginTop: "3px" }}
+      >
+        {fileUploadContent}
+      </div>
+    </div>
+  </button>
+</div>
+
+
+
+)
+
+                                            }
+
+                                           
+
+
+                                         
+<div
                                               className=""
                                               onClick={(e) =>
                                                 deleteFileUploadArrayOnlyOne(
@@ -7343,28 +7869,17 @@ position:"absolute"
                                                 </svg>
                                               </button>
                                             </div>
-                                          )}
-
-                                          <div style={{ display: "none" }}>
-                                            <input
-                                              type="file"
-                                              id="imageInput"
-                                              hidden="hidden"
-                                              onChange={(e) => {
-                                                handleImageChange(e);
-                                              }}
-                                            />
-                                          </div>
                                         </div>
 
+
                                         {uploadFileField.length - 1 == index &&
-                                          (singleUploadFile.belgeDocument ? (
+                                          (singleUploadFile.belgeDocument && uploadFileField.length < 4 &&  (
                                             <div
                                               style={{
                                                 display: "flex",
                                                 cursor: "pointer",
                                               }}
-                                              onClick={addUploadFileMore}
+                                              onClick={()=>{addUploadFileMore(); setfileUploadContent("Dosya yükle (maks. 2MB)")}}
                                             >
                                               <div>
                                                 <svg
@@ -7401,14 +7916,48 @@ position:"absolute"
                                                     borderBottom:
                                                       "1px solid #8B8DFF ",
                                                   }}
+
                                                 >
-                                                  Yeni Ekle
+                                                  Yeni Belge Ekle
                                                 </span>
                                               </div>
                                             </div>
-                                          ) : (
-                                            <div>Belge Yükleyin</div>
                                           ))}
+
+                                          {
+
+uploadFileField.length - 1 == index && (
+  singleUploadFile.belgeDocument==="" && (
+    <div>
+      {index+2}.belge yüklemek için, öncekinki kaydedin.
+    </div>
+  )
+)
+
+
+
+                                          }
+
+                                              {/* (
+                                            <div>Belge Yükleyin</div>
+                                          ) */}
+
+
+
+<div style={{ display: "none" }}>
+                                            <input
+                                              type="file"
+                                              id="imageInput"
+                                              hidden="hidden"
+                                              onChange={(e) => {
+                                                handleImageChange(e, index);
+
+                                              }}
+                                            />
+                                          </div>
+
+
+          
                                       </div>
                                     )
                                   )}
@@ -7423,7 +7972,7 @@ position:"absolute"
                                         : "Kaydet"}
                                     </button>
                                   </div>
-                                </div>{" "}
+                                </div>
                               </div>
                             </button>
                             {/* delete form uploaded */}{" "}
@@ -7502,6 +8051,7 @@ position:"absolute"
                             </button>
                           </div>
                         ) : value.type == "urlLinkPanel" ? (
+
                           <div>
                             <button
                               className={
